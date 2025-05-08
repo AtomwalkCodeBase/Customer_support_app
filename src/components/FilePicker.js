@@ -1,155 +1,130 @@
 import React from 'react';
-import { TouchableOpacity, Text, Alert } from 'react-native';
-import styled from 'styled-components/native';
-import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
-import { colors } from '../Styles/appStyle';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
-const FileButton = styled.TouchableOpacity`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 8px;
-`;
-
-const Label = styled.Text`
-  font-size: 16px;
-  margin-top: 15px;
-  margin-bottom: 5px;
-`;
-
-const InputText = styled.Text`
-  color: black;
-  font-size: 16px;
-  font-weight: normal;
-`;
-
-const Icon = styled.Image`
-  width: 24px;
-  height: 24px;
-`;
-
-const FilePicker = ({ label, fileName, setFileName, setFileUri, setFileMimeType, error }) => {
-  const handleFilePick = async () => {
-    try {
-      Alert.alert(
-        'Select Option',
-        'Choose a file from the library or capture a photo',
-        [
-          {
-            text: 'Capture Photo',
-            onPress: async () => {
-              const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-              if (cameraPermission.granted) {
-                let result = await ImagePicker.launchCameraAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  quality: 1,
-                });
-  
-                if (!result.canceled) {
-                  const compressedImage = await compressImage(result.assets[0].uri);
-                  setFileName(result.assets[0].fileName || 'captured_image.jpg');
-                  setFileUri(compressedImage.uri);
-                  setFileMimeType(result.assets[0].mimeType || 'image/jpeg');
-                }
-              } else {
-                Alert.alert('Permission Required', 'Camera permission is required to capture photos');
-              }
-            },
-          },
-          {
-            text: 'Choose File',
-            onPress: async () => {
-              try {
-                let result = await DocumentPicker.getDocumentAsync({
-                  type: ['image/*', 'application/pdf'],
-                  copyToCacheDirectory: true,
-                });
-          
-                if (result.type !== 'cancel') {
-                  const fileUri = result.assets[0].uri;
-                  const fileName = result.assets[0].name;
-                  const mimeType = result.assets[0].mimeType || result.type;
-          
-                  let compressedImageUri = fileUri;
-                  if (result.assets[0].mimeType && result.assets[0].mimeType.startsWith('image/')) {
-                    const compressedImage = await compressImage(fileUri);
-                    compressedImageUri = compressedImage.uri || compressedImage;
-                  }
-          
-                  // setFile({
-                  //   uri: fileUri,
-                  //   name: fileName,
-                  //   mimeType: mimeType
-                  // });
-                  setFileName(fileName);
-                  setFileUri(compressedImageUri);
-                  setFileMimeType(mimeType);
-                }
-              } catch (error) {
-                console.error('Error while picking file or compressing:', error);
-              }
-            },
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-        ],
-        { cancelable: true }
-      );
-    } catch (err) {
-      Alert.alert('No File Selected', 'You have not selected a file. Please select a file.');
-    }
-  };
-  
-
-  const compressImage = async (uri) => {
-    let compressQuality = 1;
-    const targetSize = 200 * 1024; // 200 KB
-
-    let compressedImage = await ImageManipulator.manipulateAsync(
-      uri,
-      [],
-      { compress: compressQuality, format: ImageManipulator.SaveFormat.JPEG }
-    );
-
-    let imageInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-
-    while (imageInfo.size > targetSize && compressQuality > 0.1) {
-      compressQuality -= 0.1;
-
-      compressedImage = await ImageManipulator.manipulateAsync(
-        uri,
-        [],
-        { compress: compressQuality, format: ImageManipulator.SaveFormat.JPEG }
-      );
-
-      imageInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-    }
-
-    return compressedImage;
-  };
-
+const FileUploadField = ({
+  label,
+  fileUri,
+  fileName,
+  onPick,
+  onRemove,
+  isLoading,
+  hadAttachment,
+  isEditMode,
+}) => {
   return (
-    <>
-      <Label>{label}</Label>
-      <FileButton onPress={handleFilePick}>
-        <InputText>{fileName || 'No file selected'}</InputText>
-        <Icon source={require('../../assets/images/Upload-Icon.png')} />
-      </FileButton>
-      {error && (
-        <Text style={{ marginTop: 7, color: colors.red, fontSize: 12 }}>
-          {error}
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      {fileUri ? (
+        <View style={styles.filePreview}>
+          <View style={styles.fileInfo}>
+            <Text numberOfLines={1} style={styles.fileNameText}>
+              {fileName}
+            </Text>
+            <TouchableOpacity
+              onPress={onRemove}
+              style={styles.clearButton}
+              disabled={isLoading}
+            >
+              <Feather name="x-circle" size={20} color="#FF6B6B" />
+              <Text style={styles.clearButtonText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          <Image source={{ uri: fileUri }} style={styles.imagePreview} />
+        </View>
+      ) : (
+        <Text style={styles.noAttachmentText}>
+          {isEditMode && hadAttachment ? 'Image cleared' : 'No image attached'}
         </Text>
       )}
-    </>
+      <TouchableOpacity
+        style={[styles.uploadButton, isLoading && styles.disabledButton]}
+        onPress={onPick}
+        disabled={isLoading}
+      >
+        <Feather name="upload" size={20} color="#FF6B6B" />
+        <Text style={styles.uploadButtonText}>Upload Image</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
-export default FilePicker;
+const styles = StyleSheet.create({
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  filePreview: {
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  fileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  fileNameText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+  },
+  clearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#FF6B6B',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  imagePreview: {
+    width: 120,
+    height: 120,
+    marginTop: 5,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  noAttachmentText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingVertical: 15,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+  },
+  uploadButtonText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  disabledButton: {
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    opacity: 0.7,
+  },
+});
+
+export default FileUploadField;

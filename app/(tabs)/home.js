@@ -6,10 +6,10 @@ import PinPopup from '../../src/screens/PinPopup';
 
 const home = () => {
   return (
-    <SafeAreaView>
+    <>
       <HomeScreen/>
       <PinPopup></PinPopup>
-    </SafeAreaView>
+    </>
   )
 }
 

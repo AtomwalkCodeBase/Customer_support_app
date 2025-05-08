@@ -10,7 +10,7 @@ const PinPopup = () => {
     useEffect(() => {
         const checkPopupPreference = async () => {
             const hasDeclinedPopup = await AsyncStorage.getItem('declinePinSetup');
-            const userPin = await AsyncStorage.getItem('userPin');
+            const userPin = await AsyncStorage.getItem('Password');
             if (!hasDeclinedPopup&&!userPin) {
                 setIsPopupVisible(true);
             }

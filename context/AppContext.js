@@ -1,7 +1,7 @@
 // src/context/AppContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import { publicAxiosRequest } from "../src/services/HttpMethod";
-import { loginURL } from "../src/services/ConstantServies";
+import { loginURL } from "../src/services/ConstantServices";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getCompanyInfo} from '../src/services/authServices'
 import { Alert } from 'react-native'

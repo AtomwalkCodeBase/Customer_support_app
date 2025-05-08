@@ -1,167 +1,150 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components/native';
-import { View, TextInput, TouchableOpacity,Alert } from 'react-native';
-import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
-import Logos from '../../assets/images/Atom_walk_logo.jpg'
-import { useRouter } from 'expo-router';
-import { loginURL } from '../../src/services/ConstantServies';
-import axios from 'axios'; // If you prefer axios for API calls
-import { getCompanyInfo } from '../../src/services/authServices';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { publicAxiosRequest } from '../../src/services/HttpMethod';
-const LoginScreen = () => { 
-    const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+import React, { useEffect, useState } from "react";
+import styled from "styled-components/native";
+import { View, TextInput, TouchableOpacity, Alert } from "react-native";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import Logos from "../../assets/images/Atom_walk_logo.jpg";
+import { useRouter } from "expo-router";
+import { loginURL, userLoginURL } from "../../src/services/ConstantServices";
+import axios from "axios"; // If you prefer axios for API calls
+import { getCompanyInfo } from "../../src/services/authServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authAxiosPost, publicAxiosRequest } from "../../src/services/HttpMethod";
+import { customerLogin } from "../../src/services/productServices";
+const LoginScreen = () => {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [userPin, setUserPin] = useState(null);
 
   useEffect(() => {
-      const fetchUserPin = async () => {
-          const storedPin = await AsyncStorage.getItem('userPin');
-          setUserPin(storedPin); // storedPin will be `null` if no value is found
-      };
-      fetchUserPin();
+    const fetchUserPin = async () => {
+      const storedPin = await AsyncStorage.getItem("userPin");
+      setUserPin(storedPin); // storedPin will be `null` if no value is found
+    };
+    fetchUserPin();
   }, []);
   const validateInput = () => {
     if (!username) {
-      setErrorMessage('Username is required');
+      setErrorMessage("User Mobile number is required");
       return false;
     }
     if (!password) {
-      setErrorMessage('Password is required');
+      setErrorMessage("PIn is required");
       return false;
     }
-    if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters long');
+    if (password.length < 4) {
+      setErrorMessage("Password must be at least 4 characters long");
       return false;
     }
-    setErrorMessage('');
+    setErrorMessage("");
     return true;
   };
 
   const handlePressPassword = () => {
     router.push({
-      pathname: 'PinScreen' 
+      pathname: "PinScreen",
     });
   };
 
   const handlePress = async () => {
-    if (!validateInput()) {
-      return;
-    } 
-    let finalUsername = username;
-  
-    // Check if username contains "@" (assuming it's an email)
-    if (!username.includes('@')) {
-      try {
-        // First API call to get the username if it's not an email
-        const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);  
-        if (userDetailResponse.status === 200) {
-          finalUsername = userDetailResponse.data.username;
-        } else {
-          setErrorMessage('User not found');
-          return;
-        }
-      } catch (error) {
-        console.error('Error fetching username:', error);
-        setErrorMessage('Failed to retrieve user details');
-        return;
-      }
-    }
-  
-    // Proceed with the login using the final username
-    try {
-      const response = await publicAxiosRequest.post(loginURL, {
-        username: finalUsername,
-        password: password,
-      });
-  
-      if (response.status === 200) {
-        AsyncStorage.setItem('Password', password);
-        AsyncStorage.setItem('username', finalUsername);
-        getCompanyInfo().then((res) => {
-          let comanyInfo = res.data; 
-          AsyncStorage.setItem('companyInfo', JSON.stringify(comanyInfo));
-          let db_name = comanyInfo.db_name.substr(3)
-          AsyncStorage.setItem('dbName', db_name);
-          console.log(res.data.db_name, db_name,"alldata--->");  
-      })
-      .catch((error) => {
-              console.log('ERROR', {error}, error.message);
-      });
 
-        const userToken = response.data['key'];
-        // Store the token in AsyncStorage
-        await AsyncStorage.setItem('userToken', userToken);
-        // Navigate to the home screen
-        router.push('/home');
+    let finalUsername = username;
+    try {
+      const response = await customerLogin(finalUsername,password);
+      if (response.status === 200) {
+        AsyncStorage.setItem("Password", password);
+        AsyncStorage.setItem("username", finalUsername);
+        const userToken = response.data?.token;
+        const Customer_id = response.data?.customer_id;
+        await AsyncStorage.setItem("Customer_id", Customer_id.toString());
+        await AsyncStorage.setItem("userToken", userToken);
+
+        const storedToken = await AsyncStorage.getItem("userToken");
+        const storedCustomerId = await AsyncStorage.getItem("Customer_id");
+        console.log("Stored userToken:", storedToken);
+        console.log("Stored Customer_id:", storedCustomerId);
+        router.push("/home");
       } else {
-        setErrorMessage('Invalid User id or Password');
+        setErrorMessage("Invalid User id or Password");
       }
     } catch (error) {
-      console.error('API call error:', error);
-      setErrorMessage('Invalid User id or Password');
+      // console.error("API call error:", error);
+      setErrorMessage("Invalid User id or Password");
     }
   };
 
   return (
     <Container>
-    {/* Logo Section */}
-    <LogoContainer>
-      <Logo source={Logos} resizeMode="contain" />
-    </LogoContainer>
+      {/* Logo Section */}
+      <LogoContainer>
+        <Logo source={Logos} resizeMode="contain" />
+      </LogoContainer>
 
-    {/* Login Text */}
-    <Title>Log In</Title>
-    <Subtitle>Enter Your Details to Login</Subtitle>
-    {/* Input Fields Section */}
-    <InputContainer>
-      <InputWrapper>
-        <MaterialIcons name="person-outline" size={20} color="#6c757d" />
-        <Input
-          placeholder="Enter your username"
-          value={username}
-          onChangeText={setUsername}
-          placeholderTextColor="#6c757d"
-        />
-      </InputWrapper>
-
-      <InputWrapper>
-        <MaterialIcons name="lock-outline" size={20} color="#6c757d" />
-        <Input
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!isPasswordVisible}
-          placeholderTextColor="#6c757d"
-        />
-        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-          <MaterialIcons
-            name={isPasswordVisible ? 'visibility' : 'visibility-off'}
-            size={20}
-            color="#6c757d"
+      {/* Login Text */}
+      <Title>Log In</Title>
+      <Subtitle> Enter your details to Login</Subtitle>
+      {/* Input Fields Section */}
+      <InputContainer>
+        <InputWrapper>
+          <MaterialIcons name="person-outline" size={20} color="#6c757d" />
+          <Input
+            placeholder="Enter Mobile Number"
+            keyboardType="numeric"
+            value={username}
+            onChangeText={setUsername}
+            placeholderTextColor="#6c757d"
           />
-        </TouchableOpacity>
-      </InputWrapper>
-      {/* Error Message */}
-     {errorMessage ? <Subtitles style={{ color: 'red' }}>{errorMessage}</Subtitles> : null}
-    </InputContainer>
-    {/* Sign In Button */}
-    <Button onPress={()=>handlePress()}>
-      <ButtonText>Sign In</ButtonText>
-    </Button>
+        </InputWrapper>
 
-    {/* Forgot Password Text */}
-    {userPin&&<ForgotPasswordText onPress={() => {handlePressPassword()}}>Login With Your Pin</ForgotPasswordText>}
+        <InputWrapper>
+          <MaterialIcons name="lock-outline" size={20} color="#6c757d" />
+          <Input
+            placeholder="PIN"
+            keyboardType="numeric"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!isPasswordVisible}
+            placeholderTextColor="#6c757d"
+          />
+          <TouchableOpacity
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+          >
+            <MaterialIcons
+              name={isPasswordVisible ? "visibility" : "visibility-off"}
+              size={20}
+              color="#6c757d"
+            />
+          </TouchableOpacity>
+        </InputWrapper>
+        {/* Error Message */}
+        {errorMessage ? (
+          <Subtitles style={{ color: "red" }}>{errorMessage}</Subtitles>
+        ) : null}
+      </InputContainer>
+      {/* Sign In Button */}
+      <Button onPress={() => handlePress()}>
+        <ButtonText>Sign In</ButtonText>
+      </Button>
 
-    {/* Bottom Navigation */}
-    <BottomNav>
-      <FontAwesome name="sign-in" size={24} color="#e74c3c" />
-      <NavText>Login</NavText>
-    </BottomNav>
-  </Container>
+      {/* Forgot Password Text */}
+      {userPin && (
+        <ForgotPasswordText
+          onPress={() => {
+            handlePressPassword();
+          }}
+        >
+          Login With Your Pin
+        </ForgotPasswordText>
+      )}
+
+      {/* Bottom Navigation */}
+      <BottomNav>
+        <FontAwesome name="sign-in" size={24} color="#e74c3c" />
+        <NavText>Login</NavText>
+      </BottomNav>
+    </Container>
   );
 };
 

@@ -1,5 +1,5 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList } from "../services/ConstantServies";
-import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL } from "./ConstantServices";
+import { authAxios, authAxiosFilePost, authAxiosPost, authAxiosPosts } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
     let data = {};
@@ -16,6 +16,23 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // console.log('getUserTasks', task_type, userTaskListURL, data)
     return authAxios(getEmpLeavedata, data)
   }
+
+  // export const login = async (dispatch, username, password) => {
+export function getUserTasks(task_type, customer_id, lead_id) {
+  let data = {};
+  if (task_type){
+      data['task_type'] = task_type;
+  }
+  if (customer_id){
+      data['customer_id'] = customer_id;
+  }
+  if (lead_id){
+      data['lead_id'] = lead_id;
+  }
+
+  // console.log('getUserTasks', task_type, userTaskListURL, data)
+  return authAxios(userTaskListURL, data)
+}
   
   export function postEmpLeave(leave_type) {
     let data = {};
@@ -95,3 +112,43 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // console.log('Data to be sent:', data);
     return authAxiosPost(empCheckData, data)
   }
+
+  //Customer Login
+export function customerLogin(username, password) {
+  let data = {
+    'mobile_number': username,
+    'pin': password
+  };
+  return authAxiosPosts(userLoginURL, data);
+}
+
+
+export function getTaskCategory() { 
+  return authAxios(getTaskCategoryURL)
+}
+
+export function getTasks(task_type, customer_id, lead_id) {
+  let data = {};
+  if (task_type){
+      data['task_type'] = task_type;
+  }
+  if (customer_id){
+      data['customer_id'] = customer_id;
+  }
+  if (lead_id){
+      data['lead_id'] = lead_id;
+  }
+
+  // console.log('getUserTasks', task_type, userTaskListURL, data)
+  return authAxios(getTaskURL, data)
+}
+
+
+export function addCustomerTicket(request_data) {
+  // let data = {};
+  // if (claim_data) {
+  //   data = claim_data;
+  // }
+  console.log('Data to be sent:', request_data);
+  return authAxiosFilePost(addCustomerTicketURL, request_data)
+}

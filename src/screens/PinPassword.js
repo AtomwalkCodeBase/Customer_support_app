@@ -10,7 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginURL } from '../../src/services/ConstantServies';
+import { loginURL } from '../../src/services/ConstantServices';
 import { publicAxiosRequest } from '../../src/services/HttpMethod';
 const PinPassword = ({modalVisible,setModalVisible}) => {
     const [userId, setUserId] = useState('');

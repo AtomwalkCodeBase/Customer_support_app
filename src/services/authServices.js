@@ -1,5 +1,5 @@
 import { authAxios } from "./HttpMethod";
-import { profileInfoURL, companyInfoURL, } from "./ConstantServies";
+import { profileInfoURL, companyInfoURL, } from "./ConstantServices";
 
 export function getProfileInfo() {
     // console.log('getProfileInfo')

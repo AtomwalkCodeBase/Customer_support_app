@@ -1,171 +1,289 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, FlatList, Dimensions } from 'react-native';
-import styled from 'styled-components/native';
-import InfoCard from '../components/InfoCard';
-import { AppContext } from '../../context/AppContext';
-import { getCompanyInfo, getProfileInfo } from '../services/authServices';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  TouchableOpacity,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import FilterDropdown from '../components/FilterDropdown';
+import AddTicketScreen from './AddTicketScreen';
+import { getTaskCategory, getUserTasks } from '../services/productServices';
+import { getCustomerId } from '../services/localStore';
+import { useRouter } from 'expo-router';
+import { ErrorModal } from '../components/Modals';
+import Header from '../components/Header';
+import TicketCard from '../components/TicketCard';
+import EmptyState from '../components/EmptyState';
+import { RefreshControl } from 'react-native';
 
+export default function TicketListScreen() {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-const { width, height } = Dimensions.get('window');
+  const router = useRouter();
 
+  // Fetch task categories
+  const fetchTaskCategories = async () => {
+    try {
+      const res = await getTaskCategory();
+      setCategories(res.data);
+      console.log('category', res.data);
+    } catch (error) {
+      console.log('Failed to fetch categories:', error);
+      setErrorMessage('Failed to load categories');
+      setErrorVisible(true);
+    }
+  };
 
-const Container = styled.View`
-  background-color: #f5f5f5;
-`;
+  // Fetch user tasks
+  const fetchTasks = async () => {
+    try {
+      const customerId = await getCustomerId();
+      const res = await getUserTasks('ALL', customerId);
+      console.log('fetchTasks response:', res.data);
+      setTickets(res.data);
+    } catch (error) {
+      console.log('Failed to fetch tasks:', error.message);
+      setErrorMessage('Failed to load tasks');
+      setErrorVisible(true);
+    }
+  };
 
-const GradientBackground = styled(LinearGradient).attrs({
-  colors: ['#c2e9fb', '#ffdde1'], // Top to bottom gradient
-  start: { x: 0, y: 0 },
-  end: { x: 1, y: 1 },
-})`
-  /* flex: 1; */
-  align-items: center;
-  /* padding: 20px; */
-  height:100%;
-`;
-
-const LogoContainer = styled.View`
-  width: ${width * 0.25}px;
-  height: ${width * 0.25}px;
-  background-color: #ffffff;
-  border-radius: ${width * 0.25}px;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 15px;
-  margin-top: 5%;
-`;
-
-const Logo = styled.Image.attrs(() => ({
-  resizeMode: 'contain',  // Cover ensures the image fills the container
-}))`
-  width: 95%;
-  height: 95%;
-  border-radius: ${width * 0.35}px;  /* Ensures the image respects the circular shape */
-`;
-
-// Header styles
-const CompanyName = styled.Text`
-  font-size: 22px;
-  font-weight: bold;
-  margin: 10px 0;
-  color: #333333;
-`;
-
-const SubHeader = styled.Text`
-  font-size: 16px;
-  margin-bottom: 20px;
-  color: #555555;
-`;
-
-// Activity List
-const ActivityContainer = styled.View`
-  width: 100%;
-  margin-top: 20px;
-  padding: 20px;
-`;
-
-const ActivityRow = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background-color: #ffffff;
-  margin-bottom: 5px;
-  border-radius: 10px;
-  elevation: 2;
-`;
-
-const ActivityText = styled.Text`
-  font-size: 14px;
-  color: #333333;
-`;
-
-const StatusText = styled.Text`
-  font-size: 14px;
-  font-weight: bold;
-  color: #e63946;
-`;
-
-const Row = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 10px;
-`;
-
-// Main App Component
-const HomePage = () => {
-  const { userToken } = useContext(AppContext);
-  const [company, setCompany] = useState({});
-  const [loading, setLoading] = useState(false);
-
+  // Initialize data on component mount
   useEffect(() => {
-    setLoading(true);
-    getCompanyInfo()
-      .then((res) => {
-        setCompany(res.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetchTaskCategories();
+    fetchTasks();
   }, []);
 
-  const activities = [
-    { id: '1', reference: 'PROJECT-2021-00002', status: 'IN PROGRESS' },
-    { id: '2', reference: 'PROJECT-2023-00004', status: 'IN PROGRESS' },
-    { id: '3', reference: 'PTAX-2020-00005', status: 'IN PROGRESS' },
+  // Handle category selection from dropdown
+  const handleCategorySelect = (category) => {
+    console.log('Selected category:', category);
+    setSelectedCategory(category);
+    setShowDropdown(false);
+  };
+
+  // Clear search input
+  const handleClearSearch = () => {
+    setSearchText('');
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchText('');
+    setSelectedCategory(null);
+    setShowDropdown(false);
+  };
+
+  // Categories for FilterDropdown (only e_type === 'TASK')
+  const filterCategories = [
+    ...categories.filter((cat) => cat.e_type === 'TASK'),
   ];
 
+  // Filter tickets based on search text and selected category
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesSearch =
+      searchText === '' ||
+      (ticket.task_ref_id &&
+        ticket.task_ref_id.toLowerCase().includes(searchText.toLowerCase())) ||
+      (ticket.remarks &&
+        ticket.remarks.toLowerCase().includes(searchText.toLowerCase()));
+
+    const matchesCategory =
+      !selectedCategory ||
+      selectedCategory.id === 'all' ||
+      (ticket.task_category_id &&
+        ticket.task_category_id.toString() === selectedCategory.id.toString());
+
+    return matchesSearch && matchesCategory;
+  });
+
+  // Handle ticket creation or update
+  const handleSaveTicket = async (ticketData) => {
+    try {
+      if (isEditMode && selectedTicket) {
+        setTickets(
+          tickets.map((ticket) =>
+            ticket.id === selectedTicket.id ? { ...ticket, ...ticketData } : ticket
+          )
+        );
+      } else {
+        setTickets([...tickets, { ...ticketData, id: ticketData.tempId || ticketData.id }]);
+      }
+      setModalVisible(false);
+      setSelectedTicket(null);
+      setIsEditMode(false);
+
+      await fetchTasks();
+    } catch (error) {
+      console.log('Error in handleSaveTicket:', error);
+      setErrorMessage('Failed to save ticket');
+      setErrorVisible(true);
+    }
+  };
+
+  // Handle edit ticket
+  const handleEditTicket = (ticket) => {
+    const mappedTicket = {
+      id: ticket.id,
+      remarks: ticket.remarks || '',
+      image: ticket.image || null,
+      task_category_id: ticket.task_category_id || null,
+      task_subcategory_id: ticket.task_subcategory_id || null,
+    };
+    setSelectedTicket(mappedTicket);
+    setIsEditMode(true);
+    setModalVisible(true);
+  };
+
+  // Navigate to ticket detail screen
+  const handleViewTicket = (ticket) => {
+    router.push({
+      pathname: 'TicketDetailScreen',
+      params: { params: JSON.stringify(ticket) },
+    });
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchTasks();
+    } catch (error) {
+      setErrorMessage('Failed to refresh tasks');
+      setErrorVisible(true);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
-    <Container>
-      <StatusBar barStyle="light-content" backgroundColor="#a970ff" />
-    <GradientBackground>
-      {/* Logo */}
-        <LogoContainer>
-          <Logo source={{ uri: company.image || 'https://via.placeholder.com/150' }} />
-        </LogoContainer>
-        <CompanyName>{company.name || 'Atomwalk Technologies'}</CompanyName>
+    <>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#FF6B6B" />
 
-      {/* <Header>ATOMWALK TECHNOLOGIES</Header> */}
-      <SubHeader>Welcome to Atomwalk Office!</SubHeader>
-
-      {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <InfoCard number="3" label="Project Activities" gradientColors={['#007bff', '#00c6ff']} />
-        <InfoCard number="0" label="Reviews" gradientColors={['#6dd5ed', '#2193b0']} />
-        <InfoCard number="1" label="Completed Activities" gradientColors={['#38ef7d', '#11998e']} />
-        <InfoCard number="2" label="Pending/On Hold" gradientColors={['#f09819', '#ff512f']} />
-        <InfoCard number="2" label="Over Due Activities" gradientColors={['#e52d27', '#b31217']} />
-      </View> */}
-
-      {/* Cards Layout */}
-      <Row>
-          <InfoCard number="3" label="Project Activities" gradientColors={['#007bff', '#00c6ff']} />
-          <InfoCard number="0" label="Reviews" gradientColors={['#6dd5ed', '#2193b0']} />
-        </Row>
-
-        <Row>
-          <InfoCard number="1" label="Completed Activities" gradientColors={['#38ef7d', '#11998e']} />
-          <InfoCard number="2" label="Pending/On Hold" gradientColors={['#f09819', '#ff512f']} />
-          <InfoCard number="2" label="Over Due Activities" gradientColors={['#e52d27', '#b31217']} />
-        </Row>
-
-      {/* Activity List */}
-      <ActivityContainer>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Activity Reference</Text>
-        <FlatList
-          data={activities}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ActivityRow>
-              <ActivityText>{item.reference}</ActivityText>
-              <StatusText>{item.status}</StatusText>
-            </ActivityRow>
-          )}
+        <FilterDropdown
+          visible={showDropdown}
+          onClose={() => setShowDropdown(false)}
+          title="Select Category"
+          options={filterCategories}
+          onSelect={handleCategorySelect}
+          onClear={handleClearFilters}
         />
-      </ActivityContainer>
-    </GradientBackground>
-    </Container>
-  );
-};
 
-export default HomePage;
+        <Header
+          ticket={tickets}
+          searchText={searchText}
+          onSearchChange={setSearchText}
+          onClearSearch={handleClearSearch}
+          onFilterPress={() => setShowDropdown(true)}
+          onNotificationPress={() => console.log('Notification pressed')}
+        />
+
+        <Text style={styles.listTitle}>List of Tickets</Text>
+
+        {filteredTickets.length > 0 ? (
+          <ScrollView
+            style={styles.ticketsList}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            {filteredTickets.map((ticket) => (
+              <TicketCard
+                key={ticket.id || ticket.tempId}
+                ticket={ticket}
+                onPress={() => handleViewTicket(ticket)}
+                onEdit={handleEditTicket}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <EmptyState
+            hasFilters={searchText || selectedCategory}
+            onCreatePress={() => {
+              setSelectedTicket(null);
+              setIsEditMode(false);
+              setModalVisible(true);
+            }}
+          />
+        )}
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            setSelectedTicket(null);
+            setIsEditMode(false);
+            setModalVisible(true);
+          }}
+        >
+          <Ionicons name="add" size={24} color="white" />
+          <Text style={styles.addButtonText}>Create New Ticket</Text>
+        </TouchableOpacity>
+
+        <AddTicketScreen
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setSelectedTicket(null);
+            setIsEditMode(false);
+          }}
+          onSave={handleSaveTicket}
+          ticket={selectedTicket}
+          isEditMode={isEditMode}
+        />
+      </SafeAreaView>
+
+      <ErrorModal
+        visible={errorVisible}
+        message={errorMessage}
+        onClose={() => setErrorVisible(false)}
+      />
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    paddingHorizontal: 20,
+    marginVertical: 15,
+  },
+  ticketsList: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  addButton: {
+    backgroundColor: '#FF6B6B',
+    marginHorizontal: 20,
+    height: 50,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    flexDirection: 'row',
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+});

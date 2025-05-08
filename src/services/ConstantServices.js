@@ -1,14 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const getDbName = async () => {
-  let dbName = await AsyncStorage.getItem('dbName');
-  return dbName;
-}
+// const getDbName = async () => {
+//   let dbName = await AsyncStorage.getItem('dbName');
+//   return dbName;
+// }
 // const localhost = "https://www.atomwalk.com"
 const localhost = "https://www.atomwalk.com"
 
+// const apiURL = "/api";
+// const db_name = getDbName();
 const apiURL = "/api";
-const db_name = getDbName();
+const db_name = "PMA_00001";
 
 export const endpoint = `${localhost}${apiURL}`;
 
@@ -29,7 +31,7 @@ export const addressCreateURL = `${endpoint}/address/create/${db_name}/`;
 export const addressUpdateURL = id => `${endpoint}/address/update/${db_name}/${id}/`;
 export const addressDeleteURL = id => `${endpoint}/address/delete/${db_name}/${id}/`;
 export const userSignUpURL = `${endpoint}/customer_sign_up/${db_name}/`;
-export const userLoginURL = `${endpoint}/customer_login/${db_name}/`;
+export const userLoginURL = `${endpoint}/customer_user_login/${db_name}/`;
 export const loginURL = `${localhost}/rest-auth/login/`;
 export const resetPasswordURL = `${endpoint}/reset_password/${db_name}/`;
 export const resetPasswordConfirmURL = `${endpoint}/reset_password_confirm/`;
@@ -65,3 +67,8 @@ export const getEmpAttendanceData = `${endpoint}/get_employee_attendance/${db_na
 export const getEmpHolidayData = `${endpoint}/get_holiday_data/${db_name}/`;
 export const empCheckData = `${endpoint}/process_employee_attendance/${db_name}/`;
 export const getClaimApproverList = `${endpoint}/get_claim_approve_list/${db_name}/`;
+
+
+export const getTaskCategoryURL = `${endpoint}/get_task_category/${db_name}/`;
+export const getTaskURL = `${endpoint}/customer_task_list/${db_name}/`;
+export const addCustomerTicketURL = `${endpoint}/process_customer_ticket/${db_name}/`;
