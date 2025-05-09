@@ -134,7 +134,7 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     getProfileInfo().then((res) => {
-      console.log("datata", res.data);
+      // console.log("datata", res.data);
       
       setProfile(res.data);
       setIsManager(res.data.user_group.is_manager);

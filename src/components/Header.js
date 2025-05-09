@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,16 +9,22 @@ import {
 } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
+import { getProfileInfo } from '../services/authServices';
 
 const Header = ({
-  ticket,
   searchText,
   onSearchChange,
   onClearSearch,
   onFilterPress,
   // onNotificationPress,
 }) => {
-  console.log("ticket", ticket);
+    const [profile, setProfile] = useState({});
+
+    useEffect(() => {
+      getProfileInfo().then((res) => {
+        setProfile(res.data);
+      });
+    }, []);
   
   return (
     <View style={styles.header}>
@@ -26,11 +32,11 @@ const Header = ({
         <View style={styles.userInfo}>
           <Image
             style={styles.avatar}
-            source={{ uri: 'https://my-office-docs.s3.amazonaws.com/media/default_user.jpg' }}
+            source={{ uri: profile?.image  }}
           />
           <View style={styles.userText}>
             <Text style={styles.greeting}>Hello,</Text>
-            <Text style={styles.userName}>{ticket.contact_name}</Text>
+            <Text style={styles.userName}>{profile?.user_name}</Text>
           </View>
         </View>
         {/* <TouchableOpacity style={styles.notificationIcon} onPress={onNotificationPress}>
