@@ -1,4 +1,5 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL } from "./ConstantServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL, getCustomerDetailListURL } from "./ConstantServices";
 import { authAxios, authAxiosFilePost, authAxiosPost, authAxiosPosts } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -72,8 +73,6 @@ export function getUserTasks(task_type, customer_id, lead_id) {
     let data = {
       'call_mode':res
     };
-    
-    // console.log(res)
     return authAxios(getEmpClaimdata, data)
   }
 
@@ -138,17 +137,28 @@ export function getTasks(task_type, customer_id, lead_id) {
   if (lead_id){
       data['lead_id'] = lead_id;
   }
-
   // console.log('getUserTasks', task_type, userTaskListURL, data)
   return authAxios(getTaskURL, data)
 }
 
 
 export function addCustomerTicket(request_data) {
-  // let data = {};
-  // if (claim_data) {
-  //   data = claim_data;
-  // }
   console.log('Data to be sent:', request_data);
   return authAxiosFilePost(addCustomerTicketURL, request_data)
+}
+
+export async function getCustomerInfo() {
+  try {
+    const customer_id = await AsyncStorage.getItem('Customer_id');
+
+      let data = {};
+      if (customer_id) {
+          data['customer_id'] = customer_id;
+      }
+
+      return authAxios(getCustomerDetailListURL, data);
+  } catch (error) {
+      console.error("Error fetching profile info:", error);
+      throw error;
+  }
 }

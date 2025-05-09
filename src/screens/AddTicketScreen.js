@@ -17,9 +17,11 @@ import { SuccessModal, ErrorModal, Loader } from '../components/Modals';
 import DropdownPicker from '../components/DropdownPicker';
 import TextInputField from '../components/TextField';
 import FileUploadField from '../components/FilePicker';
+import { FeedbackSection } from '../components/FeedbackForm';
+import { colors } from '../Styles/appStyle';
 
 const AddTicketScreen = ({ visible, onClose, onSave, ticket, isEditMode = false }) => {
-  const [categories, setCategories] = useState([]);
+  // const [categories, setCategories] = useState([]);
   const [mainCategories, setMainCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [selectedMainCategory, setSelectedMainCategory] = useState({ id: null, name: 'Select Category' });
@@ -41,7 +43,7 @@ const AddTicketScreen = ({ visible, onClose, onSave, ticket, isEditMode = false 
     const subs = data.filter((item) => item.e_type === 'T_SUB');
     setMainCategories(mains);
     setSubCategories(subs);
-    setCategories(data);
+    // setCategories(data);
   };
 
   // Fetch task categories
@@ -161,15 +163,15 @@ const AddTicketScreen = ({ visible, onClose, onSave, ticket, isEditMode = false 
 
       if (isEditMode) {
         formData.append('task_id', ticket.id.toString());
-        if (!fileUri && hadAttachment) {
-          formData.append('remove_attachment', 'true');
-        }
+        // if (!fileUri && hadAttachment) {
+        //   formData.append('remove_attachment', 'true');
+        // }
       } else {
         formData.append('task_category_id', selectedMainCategory.id.toString());
         if (selectedSubCategory.id) {
-          formData.append('task_subcategory_id', selectedSubCategory.id.toString());
+          formData.append('task_sub_category_id', selectedSubCategory.id.toString());
         }
-        formData.append('task_type', 'TICKET');
+        // formData.append('task_type', 'TICKET');
       }
 
       if (fileUri) {
@@ -188,7 +190,7 @@ const AddTicketScreen = ({ visible, onClose, onSave, ticket, isEditMode = false 
         const updatedTicket = {
           id: res.data.id,
           task_category_id: selectedMainCategory.id,
-          task_subcategory_id: selectedSubCategory.id || null,
+          task_sub_category_id: selectedSubCategory.id || null,
           remarks: res.data.remarks,
           image: res.data.image || null,
           task_ref_id: res.data.task_ref_id,
@@ -347,13 +349,13 @@ const AddTicketScreen = ({ visible, onClose, onSave, ticket, isEditMode = false 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.backgroundDark,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FF6B6B',
+    backgroundColor: colors.primary,
     paddingVertical: 15,
     paddingHorizontal: 20,
     elevation: 3,
@@ -366,7 +368,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    color: 'white',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -374,7 +376,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   clearButtonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -385,13 +387,13 @@ const styles = StyleSheet.create({
   saveTicketButton: {
     marginVertical: 20,
     marginHorizontal: 15,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: colors.primary,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
   },
   saveTicketButtonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },

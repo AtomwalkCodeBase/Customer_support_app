@@ -8,14 +8,18 @@ import {
   Image,
 } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../Styles/appStyle';
 
 const Header = ({
+  ticket,
   searchText,
   onSearchChange,
   onClearSearch,
   onFilterPress,
-  onNotificationPress,
+  // onNotificationPress,
 }) => {
+  console.log("ticket", ticket);
+  
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
@@ -26,12 +30,12 @@ const Header = ({
           />
           <View style={styles.userText}>
             <Text style={styles.greeting}>Hello,</Text>
-            <Text style={styles.userName}>John Doe</Text>
+            <Text style={styles.userName}>{ticket.contact_name}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.notificationIcon} onPress={onNotificationPress}>
+        {/* <TouchableOpacity style={styles.notificationIcon} onPress={onNotificationPress}>
           <Feather name="bell" size={24} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View style={styles.searchContainer}>
@@ -64,7 +68,7 @@ const Header = ({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: colors.primary,
     padding: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -82,17 +86,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
   },
   userText: {
     marginLeft: 10,
   },
   greeting: {
-    color: 'white',
+    color: colors.white,
     fontSize: 14,
   },
   userName: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -108,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 10,
     paddingHorizontal: 10,
     height: 45,
@@ -119,7 +123,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: 'black',
+    color: colors.black,
   },
   micIcon: {
     marginLeft: 10,

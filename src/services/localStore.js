@@ -23,6 +23,6 @@ export const checkToken = async () => {
 
 export const getCustomerId = async () => {
   const customer_id = await AsyncStorage.getItem("Customer_id");
-  console.log('customer id', typeof(customer_id));
+  console.log('customer id', customer_id);
   return customer_id;
 };

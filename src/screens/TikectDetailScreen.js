@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,8 +10,9 @@ import {
   StatusBar,
   Linking
 } from 'react-native';
-import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import FeedbackSection from '../components/FeedbackSection';
 
 // Reusable component for info items
 const InfoItem = ({ icon, label, value, onPress, isLink }) => {
@@ -96,29 +97,16 @@ const getPriorityText = (priority) => {
 const TicketDetailScreen = () => {
 	const { params } = useLocalSearchParams(); 
 	const ticket = JSON.parse(params); 
-
-//   const handleCall = () => {
-//     Linking.openURL(`tel:${ticket.mobile_number}`);
-//   };
-
-//   const handleEmail = () => {
-//     Linking.openURL(`mailto:${ticket.email_id}`);
-//   };
+  const navigation = useNavigation();
 
   const handleBack = () => {
-    // In a real app: navigation.goBack();
-    console.log('Go back');
+    navigation.goBack();
   };
 
-  const handleEdit = () => {
-    console.log('Edit ticket');
-    // In a real app: navigation.navigate('EditTicket', { ticketId: ticket.id });
+  const handleFeedbackSubmit = (feedbackData) => {
+    console.log('Feedback submitted:', feedbackData);
+    // Here you'd typically send the feedback to your API
   };
-
-  // Get address if available
-  const address = ticket.customer.address_line_1 || ticket.customer.address_line_2 
-    ? `${ticket.customer.address_line_1} ${ticket.customer.address_line_2}`.trim()
-    : null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -130,8 +118,8 @@ const TicketDetailScreen = () => {
           <Feather name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ticket Details</Text>
-        <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-          <Feather name="edit" size={20} color="white" />
+        <TouchableOpacity  style={styles.editButton}>
+          {/* <Feather name="edit" size={20} color="white" /> */}
         </TouchableOpacity>
       </View>
 
@@ -145,55 +133,10 @@ const TicketDetailScreen = () => {
           <View style={styles.typeRow}>
             <View style={styles.typeBadge}>
               {/* <Text style={styles.typeText}>{ticket.task_type_display}</Text> */}
-              <Text style={styles.typeText}>{ticket.task_type}</Text>
+              <Text style={styles.typeText}>{ticket.task_category_name}</Text>
             </View>
             <Text style={styles.dateText}>{ticket.task_date}</Text>
           </View>
-        </View>
-
-        {/* Customer Info Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Customer Information</Text>
-          </View>
-          
-          <View style={styles.customerCard}>
-            <Image 
-              source={{ uri: ticket.customer.image }} 
-              style={styles.customerImage} 
-            />
-            <View style={styles.customerInfo}>
-              <Text style={styles.customerName}>{ticket.contact_name}</Text>
-              {/* {(ticket.customer.address_line_1 || ticket.customer.address_line_2) && (
-                       <Text style={styles.customerAddress} numberOfLines={2}>
-                        {ticket.customer.address_line_1 || ticket.customer.address_line_2}
-                      </Text>
-                  )} */}
-              {(ticket.customer.address_line_1 || ticket.customer.address_line_2) && (
-                <Text style={styles.customerAddress} numberOfLines={2}>
-                  {[ticket.customer.address_line_1, ticket.customer.address_line_2]
-                    .filter(Boolean)
-                    .join(', ')}
-                </Text>
-                )}
-            </View>
-          </View>
-
-          <InfoItem 
-            icon={<Feather name="phone" size={20} color="#FF6B6B" />}
-            label="Mobile Number"
-            value={ticket.mobile_number}
-            // onPress={handleCall}
-            // isLink={true}
-          />
-          
-          <InfoItem 
-            icon={<Feather name="mail" size={20} color="#FF6B6B" />}
-            label="Email Address"
-            value={ticket.email_id}
-            // onPress={handleEmail}
-            // isLink={true}
-          />
         </View>
 
         {/* Ticket Details Section */}
@@ -221,33 +164,25 @@ const TicketDetailScreen = () => {
           />
         </View>
 
-        {/* Owner Info Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Created By</Text>
-          </View>
-          
-          <View style={styles.ownerCard}>
-            <Image 
-              source={{ uri: ticket.owner.image }} 
-              style={styles.ownerImage} 
-            />
-            <View style={styles.ownerInfo}>
-              <Text style={styles.ownerName}>
-                {ticket.owner.user_nick_name || ticket.owner.user_name}
-              </Text>
-            </View>
-          </View>
-        </View>
+
+          <FeedbackSection 
+            ticket={ticket} 
+            onSubmitFeedback={handleFeedbackSubmit}
+          />
       </ScrollView>
 
-      {/* Action Buttons */}
-      {/* <View style={styles.actionButtons}>
-        <TouchableOpacity style={[styles.actionButton, styles.updateButton]}>
-          <Feather name="check-circle" size={20} color="white" />
-          <Text style={styles.actionButtonText}>Update Status</Text>
-        </TouchableOpacity>
-      </View> */}
+      {/* <AddTicketScreen
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedTicket(null);
+          setIsEditMode(false);
+        }}
+        onSave={handleSaveTicket}
+        ticket={selectedTicket}
+        isEditMode={isEditMode}
+      /> */}
+
     </SafeAreaView>
   );
 };
@@ -453,6 +388,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
   },
   actionButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  feedbackSection: {
+    marginBottom: 20,
+  },
+  feedbackButton: {
+    backgroundColor: '#FF6B6B',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  feedbackButtonText: {
     color: 'white',
     fontWeight: 'bold',
     marginLeft: 8,

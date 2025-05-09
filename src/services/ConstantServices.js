@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 //   return dbName;
 // }
 // const localhost = "https://www.atomwalk.com"
-const localhost = "https://www.atomwalk.com"
+const localhost = "https://crm.atomwalk.com"
 
 // const apiURL = "/api";
 // const db_name = getDbName();

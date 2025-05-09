@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../Styles/appStyle';
 
 const EmptyState = ({ hasFilters, onCreatePress }) => {
   return (
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FF6B6B',
+    color: colors.primary,
     marginTop: 20,
     textAlign: 'center',
   },

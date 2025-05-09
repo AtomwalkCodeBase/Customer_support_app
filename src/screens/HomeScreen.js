@@ -18,6 +18,7 @@ import Header from '../components/Header';
 import TicketCard from '../components/TicketCard';
 import EmptyState from '../components/EmptyState';
 import { RefreshControl } from 'react-native';
+import { colors } from '../Styles/appStyle';
 
 export default function TicketListScreen() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -39,7 +40,7 @@ export default function TicketListScreen() {
     try {
       const res = await getTaskCategory();
       setCategories(res.data);
-      console.log('category', res.data);
+      // console.log('category', res.data);
     } catch (error) {
       console.log('Failed to fetch categories:', error);
       setErrorMessage('Failed to load categories');
@@ -52,7 +53,7 @@ export default function TicketListScreen() {
     try {
       const customerId = await getCustomerId();
       const res = await getUserTasks('ALL', customerId);
-      console.log('fetchTasks response:', res.data);
+      // console.log('fetchTasks response:', res.data);
       setTickets(res.data);
     } catch (error) {
       console.log('Failed to fetch tasks:', error.message);
@@ -140,7 +141,7 @@ export default function TicketListScreen() {
       remarks: ticket.remarks || '',
       image: ticket.image || null,
       task_category_id: ticket.task_category_id || null,
-      task_subcategory_id: ticket.task_subcategory_id || null,
+      task_sub_category_id: ticket.task_sub_category_id || null,
     };
     setSelectedTicket(mappedTicket);
     setIsEditMode(true);
@@ -170,7 +171,7 @@ export default function TicketListScreen() {
   return (
     <>
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#FF6B6B" />
+        <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
 
         <FilterDropdown
           visible={showDropdown}
@@ -187,7 +188,7 @@ export default function TicketListScreen() {
           onSearchChange={setSearchText}
           onClearSearch={handleClearSearch}
           onFilterPress={() => setShowDropdown(true)}
-          onNotificationPress={() => console.log('Notification pressed')}
+          // onNotificationPress={() => console.log('Notification pressed')}
         />
 
         <Text style={styles.listTitle}>List of Tickets</Text>
@@ -228,7 +229,7 @@ export default function TicketListScreen() {
             setModalVisible(true);
           }}
         >
-          <Ionicons name="add" size={24} color="white" />
+          <Ionicons name="add" size={24} color={colors.white} />
           <Text style={styles.addButtonText}>Create New Ticket</Text>
         </TouchableOpacity>
 
@@ -257,7 +258,7 @@ export default function TicketListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
   },
   listTitle: {
     fontSize: 18,
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   addButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: colors.primary,
     marginHorizontal: 20,
     height: 50,
     borderRadius: 10,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   addButtonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,

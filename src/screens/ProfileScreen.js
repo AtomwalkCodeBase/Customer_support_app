@@ -9,6 +9,7 @@ import HeaderComponent from './HeaderComponent';
 import { useNavigation, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCustomerInfo } from '../services/productServices';
 
 // Styled components
 const Container = styled.View`
@@ -133,10 +134,36 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     getProfileInfo().then((res) => {
+      console.log("datata", res.data);
+      
       setProfile(res.data);
       setIsManager(res.data.user_group.is_manager);
     });
   }, []);
+
+
+
+
+  // useEffect(() => {
+  //   fetchProfile();
+  // },[] )
+
+
+
+  // const fetchProfile = async () => {
+  //   // setIsLoading(true);
+  //   try {
+  //     const res = await getCustomerInfo();
+  //     // setFetchData(res?.data);
+  //     console.log("profile", res?.data);
+      
+  //     // setProfile(res?.data[0]);
+  //   } catch (error) {
+  //     console.error('Failed to fetch profile:', error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleBackPress = () => {
     navigation.goBack();

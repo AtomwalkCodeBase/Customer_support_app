@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../Styles/appStyle';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -35,7 +36,7 @@ const TicketCard = ({ ticket, onPress, onEdit }) => {
     <TouchableOpacity style={styles.ticketCard} onPress={onPress}>
       <View style={styles.ticketHeader}>
         <Text style={styles.ticketType}>
-          {ticket.task_type || ticket.task_type_display || 'N/A'}
+          {ticket.task_category_name || ticket.task_type_display || 'N/A'}
         </Text>
         <View
           style={[styles.statusBadge, { backgroundColor: `${getStatusColor(ticket.task_status)}33` }]}
@@ -69,7 +70,7 @@ const TicketCard = ({ ticket, onPress, onEdit }) => {
 
 const styles = StyleSheet.create({
   ticketCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.white,
     borderRadius: 15,
     padding: 15,
     marginBottom: 15,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   ticketType: {
-    color: '#FF6B6B',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -102,13 +103,13 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: colors.textPrimary,
     marginBottom: 5,
   },
   ticketTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.textPrimary,
     marginBottom: 10,
   },
   bottomRow: {
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   editButtonText: {
-    color: '#FF6B6B',
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '500',
     marginLeft: 5,

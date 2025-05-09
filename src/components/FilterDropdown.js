@@ -9,6 +9,7 @@ import {
   ScrollView, 
   TouchableOpacity 
 } from 'react-native';
+import { colors } from '../Styles/appStyle';
 
 const Dropdown = ({
   visible,
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bottomSheet: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
+    color: colors.textPrimary,
   },
 });
 

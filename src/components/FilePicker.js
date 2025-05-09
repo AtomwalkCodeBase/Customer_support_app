@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-const FileUploadField = ({
+const FilePicker = ({
   label,
   fileUri,
   fileName,
@@ -19,7 +19,7 @@ const FileUploadField = ({
   isEditMode,
 }) => {
   return (
-    <View style={styles.inputGroup}>
+    <View style={styles.inputGroup} pointerEvents="auto">
       <Text style={styles.label}>{label}</Text>
       {fileUri ? (
         <View style={styles.filePreview}>
@@ -31,12 +31,17 @@ const FileUploadField = ({
               onPress={onRemove}
               style={styles.clearButton}
               disabled={isLoading}
+               pointerEvents="none"
             >
               <Feather name="x-circle" size={20} color="#FF6B6B" />
               <Text style={styles.clearButtonText}>Clear</Text>
             </TouchableOpacity>
           </View>
-          <Image source={{ uri: fileUri }} style={styles.imagePreview} />
+          <Image
+            source={{ uri: fileUri }}
+            style={styles.imagePreview}
+            pointerEvents="none"
+          />
         </View>
       ) : (
         <Text style={styles.noAttachmentText}>
@@ -127,4 +132,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FileUploadField;
+export default FilePicker;

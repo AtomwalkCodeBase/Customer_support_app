@@ -4,26 +4,32 @@ import Constants from "expo-constants";
 
 // Colors
 export const colors = {
-  primary: "#3c9df1",
-  secondary: "#ffa500",
-  tertiary: "#E6E6E6",
-  alternative: "#999999",
-  lightblue: "#00B6FF",
-  navyblue: "#1C0C3E",
-  white: '#fff',
-  black: '#000',
-  blue: '#5D5FEE',
-  lightgreen:'#90EE90',
-  grey: '#BABBC3',
-  light: '#F3F4FB',
-  darkBlue: '#7978B5',
-  yellow:'#FFC300',
-  lightyellow:'#F7F9D1',
-  offwhite: '#F8F6F0',
-  red: '#ff2400',
-  green: '#32cd32',
-  darkred: '#ff2020',
-  darkgrey: '#4c4c4c',
+  // Brand & Primary
+  primary: '#FF6B6B',
+  primaryTransparent: '#ff550033',
+
+  // Text
+  textPrimary: '#333',
+  textSecondary: '#777E90',
+  textOnPrimary: '#FFFFFF',
+
+  // Backgrounds
+  background: '#FFFFFF',
+  backgroundDark: '#F5F5F5',
+  backgroundDarker: '#1E1E1E',
+
+  // Borders & Divider
+  border: '#9B9B9A',
+
+  // Status
+  error: '#ED1010',
+  success: 'green',
+  warning: '#FFC300',
+  muted: '#eee',
+
+  // Utility
+  black: '#000000',
+  white: '#FFFFFF',
 };
 
 const statusBarHeight = Constants.statusBarHeight;
