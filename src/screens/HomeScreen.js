@@ -19,6 +19,7 @@ import TicketCard from '../components/TicketCard';
 import EmptyState from '../components/EmptyState';
 import { RefreshControl } from 'react-native';
 import { colors } from '../Styles/appStyle';
+import EditTicketScreen from './EditTicketScreen';
 
 export default function TicketListScreen() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -140,8 +141,8 @@ export default function TicketListScreen() {
       id: ticket.id,
       remarks: ticket.remarks || '',
       image: ticket.image || null,
-      task_category_id: ticket.task_category_id || null,
-      task_sub_category_id: ticket.task_sub_category_id || null,
+      task_category_name: ticket.task_category_name || null,
+      task_sub_category_name: ticket.task_sub_category_name || null,
     };
     setSelectedTicket(mappedTicket);
     setIsEditMode(true);
@@ -233,17 +234,28 @@ export default function TicketListScreen() {
           <Text style={styles.addButtonText}>Create New Ticket</Text>
         </TouchableOpacity>
 
-        <AddTicketScreen
-          visible={modalVisible}
-          onClose={() => {
-            setModalVisible(false);
-            setSelectedTicket(null);
-            setIsEditMode(false);
-          }}
-          onSave={handleSaveTicket}
-          ticket={selectedTicket}
-          isEditMode={isEditMode}
-        />
+        {isEditMode && selectedTicket ? (
+  <EditTicketScreen
+    visible={modalVisible}
+    onClose={() => {
+      setModalVisible(false);
+      setSelectedTicket(null);
+      setIsEditMode(false);
+    }}
+    onSave={handleSaveTicket}
+    ticket={selectedTicket}
+  />
+) : (
+  <AddTicketScreen
+    visible={modalVisible}
+    onClose={() => {
+      setModalVisible(false);
+      setSelectedTicket(null);
+      setIsEditMode(false);
+    }}
+    onSave={handleSaveTicket}
+  />
+)}
       </SafeAreaView>
 
       <ErrorModal

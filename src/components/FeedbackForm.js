@@ -132,6 +132,8 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
     }).start();
 
     setSelectedRating(index);
+    console.log("index", index + 1);
+    
   };
 
   const handleSuccessClose = () => {
@@ -158,6 +160,7 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
       formData.append('task_id', ticket.id.toString());
       formData.append('remarks', remarks);
 	  formData.append('call_mode', 'TICKET_FEEDBACK');
+	  formData.append('feedback_rating', selectedRating + 1);
 
       if (fileUri) {
 		const fileExtension = fileName.split('.').pop() || 'jpg';

@@ -151,11 +151,11 @@ const TicketDetailScreen = () => {
             value={ticket.remarks}
           />
           
-          <InfoItem 
+          {/* <InfoItem 
             icon={<Feather name="user" size={20} color="#FF6B6B" />}
             label="Assigned To"
             value={ticket.emp_assigned ? ticket.emp_assigned : "Not Assigned"}
-          />
+          /> */}
           
           <InfoItem 
             icon={<Feather name="flag" size={20} color="#FF6B6B" />}
