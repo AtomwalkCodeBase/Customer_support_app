@@ -1,5 +1,5 @@
-import { authAxios } from "./HttpMethod";
-import { profileInfoURL, companyInfoURL, } from "./ConstantServices";
+import { authAxios, authAxiosGET } from "./HttpMethod";
+import { profileInfoURL, companyInfoURL, getDbList, } from "./ConstantServices";
 
 export function getProfileInfo() {
     // console.log('getProfileInfo')
@@ -8,5 +8,12 @@ export function getProfileInfo() {
 
 export function getCompanyInfo() {
     return authAxios(companyInfoURL)
+}
+
+export function getDBListInfo() {
+    let data = {
+         'mobile_app_type': 'CRM_C'
+      };
+    return authAxiosGET(getDbList, data)
 }
 

@@ -19,21 +19,21 @@ export function getEmpLeave(leave_type , emp_id, year) {
   }
 
   // export const login = async (dispatch, username, password) => {
-export function getUserTasks(task_type, customer_id, lead_id) {
-  let data = {};
-  if (task_type){
-      data['task_type'] = task_type;
-  }
-  if (customer_id){
-      data['customer_id'] = customer_id;
-  }
-  if (lead_id){
-      data['lead_id'] = lead_id;
-  }
+// export function getUserTasks(task_type, customer_id, lead_id) {
+//   let data = {};
+//   if (task_type){
+//       data['task_type'] = task_type;
+//   }
+//   if (customer_id){
+//       data['customer_id'] = customer_id;
+//   }
+//   if (lead_id){
+//       data['lead_id'] = lead_id;
+//   }
 
-  // console.log('getUserTasks', task_type, userTaskListURL, data)
-  return authAxios(userTaskListURL, data)
-}
+//   // console.log('getUserTasks', task_type, userTaskListURL, data)
+//   return authAxios(userTaskListURL, data)
+// }
   
   export function postEmpLeave(leave_type) {
     let data = {};
@@ -113,24 +113,25 @@ export function getUserTasks(task_type, customer_id, lead_id) {
   }
 
   //Customer Login
-export function customerLogin(username, password) {
-  let data = {
-    'mobile_number': username,
-    'pin': password
-  };
-  return authAxiosPosts(userLoginURL, data);
+export async function customerLogin(payload) {
+  const url = await userLoginURL(); 
+  let data = payload;
+  return authAxiosPosts(url, data);
 }
 
 
-export function getTaskCategory() { 
-  return authAxios(getTaskCategoryURL)
+export async function getTaskCategory() { 
+  const url = await getTaskCategoryURL();
+  return authAxios(url)
 }
 
-export function getCustomerList() { 
-  return authAxios(getCustomerListURL)
+export async function getCustomerList() { 
+  const url = await getCustomerListURL();
+  return authAxios(url)
 }
 
-export function getTasks(task_type, customer_id, lead_id) {
+export async function getTasksList(task_type, customer_id) {
+  const url = await userTaskListURL();
   let data = {};
   if (task_type){
       data['task_type'] = task_type;
@@ -138,30 +139,27 @@ export function getTasks(task_type, customer_id, lead_id) {
   if (customer_id){
       data['customer_id'] = customer_id;
   }
-  if (lead_id){
-      data['lead_id'] = lead_id;
-  }
-  // console.log('getUserTasks', task_type, userTaskListURL, data)
-  return authAxios(getTaskURL, data)
+  return authAxios(url, data)
 }
 
 
-export function addCustomerTicket(request_data) {
+export async function addCustomerTicket(request_data) {
+  const url = await addCustomerTicketURL();
   console.log('Data to be sent:', request_data);
-  return authAxiosFilePost(addCustomerTicketURL, request_data)
+  return authAxiosFilePost(url, request_data)
 }
 
-export async function getCustomerInfo() {
-  try {
+// export async function getCustomerInfo() {
+//   try {
 
-      // let data = {};
-      // if (customer_id) {
-      //     data['customer_id'] = customer_id;
-      // }
+//       // let data = {};
+//       // if (customer_id) {
+//       //     data['customer_id'] = customer_id;
+//       // }
 
-      return authAxios(getCustomerDetailListURL);
-  } catch (error) {
-      console.error("Error fetching profile info:", error);
-      throw error;
-  }
-}
+//       return authAxios(getCustomerDetailListURL);
+//   } catch (error) {
+//       console.error("Error fetching profile info:", error);
+//       throw error;
+//   }
+// }

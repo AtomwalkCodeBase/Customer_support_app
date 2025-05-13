@@ -54,7 +54,7 @@ export const SuccessModal = ({ visible, message, onClose, buttonText = "OK" }) =
  * @param {function} onClose - Function to call when modal is closed
  * @param {string} buttonText - Text for the action button (optional)
  */
-export const ErrorModal = ({ visible, message, onClose, buttonText = "Close" }) => {
+export const ErrorModal = ({ visible, message, onClose, onRetry, buttonText = "Close" }) => {
   return (
     <Modal
       visible={visible}
@@ -77,6 +77,13 @@ export const ErrorModal = ({ visible, message, onClose, buttonText = "Close" }) 
           >
             <Text style={styles.buttonText}>{buttonText}</Text>
           </TouchableOpacity>
+
+         { onRetry && <TouchableOpacity
+            style={[styles.modalButton, styles.errorButton]}
+            onPress={onRetry}
+          >
+            <Text style={styles.buttonText}>{buttonText}</Text>
+          </TouchableOpacity> }
         </View>
       </View>
     </Modal>

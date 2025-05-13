@@ -4,7 +4,7 @@ import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { getProfileInfo } from '../services/authServices';
 
 const ProfileScreen = () => {
@@ -30,6 +30,7 @@ const ProfileScreen = () => {
   const [userPin, setUserPin] = useState(null);
     const [profileImg, setProfileImg] = useState({});
   const router = useRouter();
+    const navigation = useNavigation();
 
       useEffect(() => {
         const fetchUserPin = async () => {
@@ -49,6 +50,10 @@ const ProfileScreen = () => {
 
   const handlePressMessage = () => {
     console.log("Press Message button");
+  };
+
+    const handleBack = () => {
+    navigation.goBack();
   };
   
 
@@ -79,7 +84,7 @@ const ProfileScreen = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="chevron-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
@@ -189,7 +194,7 @@ const ProfileScreen = () => {
             <View style={styles.optionDivider} />
             
             {/* FAQ */}
-            <TouchableOpacity style={styles.optionItem} onPress={handlePressFAQ}>
+            {/* <TouchableOpacity style={styles.optionItem} onPress={handlePressFAQ}>
               <View style={styles.optionIconContainer}>
                 <MaterialIcons name="help" size={22} color={colors.primary} />
               </View>
@@ -198,7 +203,7 @@ const ProfileScreen = () => {
                 <Text style={styles.optionDescription}>Frequently asked questions</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             
             <View style={styles.optionDivider} />
             
@@ -218,9 +223,9 @@ const ProfileScreen = () => {
       </ScrollView>
       
       {/* Contact Button */}
-      <TouchableOpacity style={styles.fab} onPress={handlePressMessage}>
+      {/* <TouchableOpacity style={styles.fab} onPress={handlePressMessage}>
         <MaterialIcons name="message" size={24} color={colors.white} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </SafeAreaView>
   );
 };
