@@ -1,9 +1,10 @@
 import { authAxios, authAxiosGET } from "./HttpMethod";
 import { profileInfoURL, companyInfoURL, getDbList, } from "./ConstantServices";
 
-export function getProfileInfo() {
+export async function getProfileInfo() {
+    const url = await profileInfoURL();
     // console.log('getProfileInfo')
-    return authAxios(profileInfoURL)
+    return authAxios(url)
 }
 
 export function getCompanyInfo() {

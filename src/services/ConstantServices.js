@@ -45,7 +45,7 @@ export const getCustomerDetailListURL = `${endpoint}/customer_detail_list/${db_n
 export const getLeadListURL = `${endpoint}/lead_list/${db_name}/`;
 export const getLeadDataListURL = `${endpoint}/lead_data_list/${db_name}/`;
 export const addTaskURL = `${endpoint}/add_task/${db_name}/`;
-export const profileInfoURL = `${endpoint}/profile_info/${db_name}/`;
+// export const profileInfoURL = `${endpoint}/profile_info/${db_name}/`;
 export const companyInfoURL = `${endpoint}/company_info/${db_name}/`;
 export const getTaskInterestListURL = `${endpoint}/task_interest_list/${db_name}/`;
 export const getProductCategoryListURL = `${endpoint}/product_category_list/${db_name}/`;
@@ -98,3 +98,8 @@ export const setUserPinURL =  async () => {
   const db_name = await getDbName();
   return `${endpoint}/set_user_pin/${db_name}/`;
 } 
+
+export const profileInfoURL = async () => {
+   const db_name = await getDbName();
+  return  `${endpoint}/profile_info/${db_name}/`;
+}

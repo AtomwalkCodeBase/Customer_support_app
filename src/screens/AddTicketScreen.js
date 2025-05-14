@@ -44,7 +44,7 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
   const fetchTaskCategories = useCallback(async () => {
     try {
       const res = await getTaskCategory();
-      console.log('Task Categories API Response:', res.data); // Debug API response
+      // console.log('Task Categories API Response:', res.data); // Debug API response
       setCategories({
         main: res.data.filter((item) => item.e_type === 'TASK'),
         sub: res.data.filter((item) => item.e_type === 'T_SUB'),
@@ -84,9 +84,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
   }, [visible, fetchTaskCategories]);
 
   // Debug state changes
-  useEffect(() => {
-    console.log('formState:', formState);
-  }, [formState]);
+  // useEffect(() => {
+  //   console.log('formState:', formState);
+  // }, [formState]);
 
   // Reset form
   const resetForm = () => {
@@ -149,7 +149,7 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
 
       // Make API call
       const res = await addCustomerTicket(formData);
-      console.log('API Response:', res.data);
+      // console.log('API Response:', res.data);
 
       if (res.status === 200) {
         // Construct ticket object for onSave

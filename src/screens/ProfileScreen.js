@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, StatusBar, Switch } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -31,28 +31,37 @@ const ProfileScreen = () => {
   const [userPin, setUserPin] = useState(null);
   const [profileImg, setProfileImg] = useState({});
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
   const router = useRouter();
   const navigation = useNavigation();
 
-      useEffect(() => {
-        const fetchUserPin = async () => {
-            const storedPin = await AsyncStorage.getItem('userPin');
-            setUserPin(storedPin); // storedPin will be `null` if no value is found
-        };
-        fetchUserPin();
-    }, []);
+  // Load user pin and biometric setting from AsyncStorage
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const storedPin = await AsyncStorage.getItem('userPin');
+        setUserPin(storedPin);
+
+        const biometric = await AsyncStorage.getItem('userBiometric');
+        setBiometricEnabled(biometric === 'true'); // Convert string to boolean
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const handlePressPassword = () => {
     router.push({ pathname: 'ResetPassword' });
   };
 
-  const handlePressFAQ = () => {
-    console.log("Press FAQ button");
-  };
+  // const handlePressFAQ = () => {
+  //   console.log("Press FAQ button");
+  // };
 
-  const handlePressMessage = () => {
-    console.log("Press Message button");
-  };
+  // const handlePressMessage = () => {
+  //   console.log("Press Message button");
+  // };
 
     const handleBack = () => {
     navigation.goBack();
@@ -63,10 +72,26 @@ const ProfileScreen = () => {
     getProfileInfo().then((res) => {
       // console.log("datata", res.data);
       
-      setProfileImg(res.data);
+      setProfileImg(res.data);      
       setIsManager(res.data.user_group.is_manager);
     });
   }, []);
+
+    // Handle biometric toggle change
+  const handleBiometricToggle = async (value) => {
+    try {
+      setBiometricEnabled(value);
+      if (value) {
+        await AsyncStorage.setItem('userBiometric', 'true');
+      } else {
+        await AsyncStorage.removeItem('userBiometric'); // Remove key when disabled
+      }
+    } catch (error) {
+      console.error('Error updating biometric setting:', error);
+      // Revert state if AsyncStorage fails
+      setBiometricEnabled(!value);
+    }
+  };
 
   // Format address based on available lines
   const formatAddress = () => {
@@ -104,9 +129,9 @@ const ProfileScreen = () => {
               style={styles.profileImage}
               // defaultSource={require('expo-asset:/placeholder.png')}
             />
-            <TouchableOpacity style={styles.cameraButton}>
+            {/* <TouchableOpacity style={styles.cameraButton}>
               <Ionicons name="camera" size={18} color={colors.white} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           
           <Text style={styles.profileName}>{profile.name}</Text>
@@ -181,6 +206,27 @@ const ProfileScreen = () => {
           <Text style={styles.sectionTitle}>Account Options</Text>
           
           <View style={styles.optionsContainer}>
+              {/* Biometric Authentication */}
+            <View style={styles.optionItem}>
+              <View style={styles.optionIconContainer}>
+                <MaterialIcons name="fingerprint" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionText}>Biometric Authentication</Text>
+                <Text style={styles.optionDescription}>
+                  Use fingerprint or face ID to log in
+                </Text>
+              </View>
+              <Switch
+                value={biometricEnabled}
+                onValueChange={handleBiometricToggle}
+                trackColor={{ false: colors.muted, true: colors.primaryTransparent }}
+                thumbColor={biometricEnabled ? colors.primary : colors.white}
+              />
+            </View>
+
+            <View style={styles.optionDivider} />
+
             {/* Set Pin */}
             <TouchableOpacity style={styles.optionItem} onPress={handlePressPassword}>
               <View style={styles.optionIconContainer}>
