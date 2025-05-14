@@ -185,7 +185,7 @@ const ProfileScreen = () => {
                 <MaterialIcons name="lock" size={22} color={colors.primary} />
               </View>
               <View style={styles.optionTextContainer}>
-                <Text style={styles.optionText}>Set PIN</Text>
+                <Text style={styles.optionText}>Update PIN</Text>
                 <Text style={styles.optionDescription}>Set or change your security PIN</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />

@@ -285,13 +285,13 @@ const LoginScreen = () => {
                       color="#6c757d"
                     />
                     <Input
-                      placeholder="PIN (min 4 digits)"
+                      placeholder="Enter your PIN"
                       value={pin}
                       onChangeText={setPin}
                       secureTextEntry={!isPasswordVisible}
                       keyboardType="numeric"
                       placeholderTextColor="#6c757d"
-                      maxLength={10} // Increased max length but validation still requires min 4
+                      maxLength={10} 
                     />
                     <TouchableOpacity
                       onPress={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -316,7 +316,7 @@ const LoginScreen = () => {
                     }}
                   >
                     <LoginButtonText
-                      style={{ color: isLoginDisabled ? "#454545" : "#fff" }}
+                      style={{ color: isLoginDisabled ? "#3333" : "#fff" }}
                     >
                       LOGIN
                     </LoginButtonText>
@@ -515,7 +515,7 @@ const ErrorText = styled.Text`
 
 const LoginButton = styled.TouchableOpacity`
   background-color: ${(props) => (props.disabled ? "#fff" : "#0062cc")};
-  border: 1px solid #0062cc;
+  border: 1px solid rgb(215, 222, 230);
   padding: ${scaleHeight(15)}px;
   border-radius: ${scaleWidth(5)}px;
   align-items: center;

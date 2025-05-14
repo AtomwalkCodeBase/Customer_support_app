@@ -35,45 +35,47 @@ const scaleHeight = (size) => (height / 812) * size;
 const AuthScreen = () => {
     const { login, setIsLoading, isLoading } = useContext(AppContext);
     const router = useRouter();
-    const [mPIN, setMPIN] = useState(['', '', '', '']);
+    const [value, setValue] = useState(''); // Single string for PIN input
     const [attemptsRemaining, setAttemptsRemaining] = useState(5);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [isNetworkError, setIsNetworkError] = useState(false);   // new state for error modal
-    // const [userName, setUserName] = useState('');
+    const [isNetworkError, setIsNetworkError] = useState(false);
     const [showPinInput, setShowPinInput] = useState(false);
     const [showFingerprint, setShowFingerprint] = useState(false);
 
-    const openPopup = () => setModalVisible(true);
     const maxAttempts = 5;
-    const inputRefs = Array(4).fill().map(() => useRef(null));
+
+    const openPopup = () => {setModalVisible(true)};
 
     useEffect(() => {
-        // Check network silently on the first load, without showing an error modal
-        NetInfo.fetch().then(netInfo => {
-            if (netInfo.isConnected) {
+        const checkBiometricOnLoad = async () => {
+            const biometricEnabled = await AsyncStorage.getItem("userBiometric");
+            const netInfo = await NetInfo.fetch();
+            if (netInfo.isConnected && biometricEnabled) {
                 handleBiometricAuthentication();
             }
-        });
+        };
+        checkBiometricOnLoad();
     }, []);
 
     const checkNetworkAndAuthenticate = async () => {
-        const netInfo = await NetInfo.fetch();
-        if (!netInfo.isConnected) {
-            setIsNetworkError(true);  // Show error modal only when the user clicks the button
+        const biometricEnabled = await AsyncStorage.getItem("userBiometric");
+        if (!biometricEnabled) {
+            Alert.alert("Biometric Authentication", "Please enable biometric authentication.");
             return;
         }
+
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+            setIsNetworkError(true);
+            return;
+        }
+
         handleBiometricAuthentication();
     };
-    
 
-    const handleMPINChange = (text, index) => {
-        const updatedMPIN = [...mPIN];
-        updatedMPIN[index] = text;
-        setMPIN(updatedMPIN);
-
-        if (text && index < 3) inputRefs[index + 1].current.focus();
-        if (!text && index > 0) inputRefs[index - 1].current.focus();
+    const handleMPINChange = (text) => {
+        setValue(text);
     };
 
     const handleMPINSubmit = async () => {
@@ -82,25 +84,23 @@ const AuthScreen = () => {
             setIsNetworkError(true);
             return;
         }
-    
+
         const correctMPIN = await AsyncStorage.getItem('userPin');
         const finalUsername = await AsyncStorage.getItem('mobileNumber');
         const userPassword = await AsyncStorage.getItem('userPin');
-    
-        setTimeout(() => {
-            if (mPIN.join('') === correctMPIN) {
-                setIsAuthenticated(true);
-                login(finalUsername, userPassword);
+
+        if (value === correctMPIN) {
+            setIsAuthenticated(true);
+            login(finalUsername, userPassword);
+        } else {
+            const remaining = attemptsRemaining - 1;
+            setAttemptsRemaining(remaining);
+            if (remaining > 0) {
+                Alert.alert('Incorrect PIN', `${remaining} attempts remaining`);
             } else {
-                const remaining = attemptsRemaining - 1;
-                setAttemptsRemaining(remaining);
-                if (remaining > 0) {
-                    Alert.alert('Incorrect mPIN', `${remaining} attempts remaining`);
-                } else {
-                    Alert.alert('Account Locked', 'Too many incorrect attempts.');
-                }
+                Alert.alert('Account Locked', 'Too many incorrect attempts.');
             }
-        }, 1000);
+        }
     };
 
     const handleBiometricAuthentication = async () => {
@@ -115,6 +115,8 @@ const AuthScreen = () => {
             if (biometricAuth.success) {
                 setIsAuthenticated(true);
                 login(finalUsername, userPassword);
+            } else {
+                Alert.alert("Authentication Failed", "Biometric authentication was not successful.");
             }
         } catch (err) {
             console.error(err);
@@ -122,78 +124,22 @@ const AuthScreen = () => {
     };
 
     return (
-        // <ImageBackground
-        //     source={require('../../assets/images/Backgroundback.png')}
-        //     style={styles.background}
-        // >
-        //     <Loader visible={isLoading} message={"Please Wait..."} />
-        //     <View style={styles.overlay}>
-        //         <View style={styles.card}>
-        //             <Text style={styles.title}>Login with PIN</Text>
-        //             <View style={styles.mPINContainer}>
-        //                 {mPIN.map((value, index) => (
-        //                     <TextInput
-        //                         key={index}
-        //                         ref={inputRefs[index]}
-        //                         style={styles.mPINInput}
-        //                         maxLength={1}
-        //                         keyboardType="number-pad"
-        //                         value={value}
-        //                         onChangeText={(text) => handleMPINChange(text, index)}
-        //                     />
-        //                 ))}
-        //             </View>
-        //             {attemptsRemaining < maxAttempts && (
-        //                 <Text style={styles.errorText}>
-        //                     Incorrect mPIN. {attemptsRemaining} attempts remaining.
-        //                 </Text>
-        //             )}
-        //             <TouchableOpacity style={styles.submitButton} onPress={handleMPINSubmit}>
-        //                 <Text style={styles.submitButtonText}>Submit</Text>
-        //             </TouchableOpacity>
-        //          {/*   <TouchableOpacity onPress={openPopup}>
-        //                 <Text style={styles.forgotText}>Forgot PIN?</Text>
-        //             </TouchableOpacity>*/}
-        //             <TouchableOpacity
-        //                 style={styles.fingerprintButton}
-        //                 onPress={checkNetworkAndAuthenticate}
-        //             >
-        //                 <Icon name="finger-print" size={30} color="#fff" />
-        //                 <Text style={styles.fingerprintButtonText}>Use Fingerprint</Text>
-        //             </TouchableOpacity>
-        //         </View>
-        //     </View>
-        //     <PinPassword setModalVisible={setModalVisible} modalVisible={modalVisible} />
-        //     <ErrorModal
-        //         visible={isNetworkError}
-        //         message="No internet connection. Please check your network and try again."
-        //         onClose={() => setIsNetworkError(false)}
-        //         onRetry={checkNetworkAndAuthenticate}  // Retry network check
-        //     />
-
-        // </ImageBackground>
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-             <LinearGradient
+            <LinearGradient
                 colors={[colors.primary, "#feb3b3"]}
                 style={styles.header}
             >
                 <View style={styles.logoContainer}>
                     {Logos ? (
-                    <Image source={Logos} style={styles.logo} />
+                        <Image source={Logos} style={styles.logo} />
                     ) : (
-                    <View style={styles.companyPlaceholder}>
-                        <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
-                    </View>
+                        <View style={styles.companyPlaceholder}>
+                            <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
+                        </View>
                     )}
                 </View>
                 <Text style={styles.welcomeText}>Welcome to ATOMWALK CRM</Text>
-                {/* {userName && (
-                    <View style={styles.userInfoContainer}>
-                        <Icon name="person-circle-outline" size={24} color="#fff" />
-                        <Text style={styles.userName}>{userName}</Text>
-                    </View>
-                )} */}
             </LinearGradient>
 
             <Loader visible={isLoading} message={"Please Wait..."} />
@@ -202,18 +148,18 @@ const AuthScreen = () => {
                 {!showPinInput && !showFingerprint ? (
                     <View style={styles.card}>
                         <Text style={styles.loginOptionsText}>Login Options</Text>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.authButton}
                             onPress={() => setShowPinInput(true)}
                         >
                             <View style={styles.authButtonIconContainer}>
                                 <Icon name="lock-closed-outline" size={22} color={colors.primary} />
                             </View>
-                            <Text style={styles.authButtonText}>Login with mPIN</Text>
+                            <Text style={styles.authButtonText}>Login with PIN</Text>
                             <Icon name="chevron-forward-outline" size={20} color="#777" style={styles.authButtonArrow} />
                         </TouchableOpacity>
-                        
-                        <TouchableOpacity 
+
+                        <TouchableOpacity
                             style={styles.authButton}
                             onPress={() => {
                                 setShowFingerprint(true);
@@ -229,62 +175,52 @@ const AuthScreen = () => {
                     </View>
                 ) : showPinInput ? (
                     <View style={styles.card}>
-                        <Text style={styles.title}>Enter your 4-digit mPIN</Text>
-                        <View style={styles.mPINContainer}>
-                            {mPIN.map((value, index) => (
-                                <TextInput
-                                    key={index}
-                                    ref={inputRefs[index]}
-                                    style={[
-                                        styles.mPINInput,
-                                        value ? styles.mPINInputFilled : {}
-                                    ]}
-                                    maxLength={1}
-                                    keyboardType="number-pad"
-                                    secureTextEntry={true}
-                                    value={value}
-                                    onChangeText={(text) => handleMPINChange(text, index)}
-                                />
-                            ))}
-                        </View>
+                        <Text style={styles.title}>Enter your PIN</Text>
+                        <TextInput
+                                style={[styles.input, { height: 50, width: '100%', backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 10 }]}
+                                placeholder="Enter your PIN"
+                                secureTextEntry
+                                keyboardType="numeric"
+                                maxLength={10}
+                                value={value}
+                                onChangeText={handleMPINChange}
+                                placeholderTextColor="#888" // Ensure placeholder text is visible
+                            />
                         {attemptsRemaining < maxAttempts && (
                             <View style={styles.errorContainer}>
                                 <Icon name="alert-circle-outline" size={16} color="#E02020" />
                                 <Text style={styles.errorText}>
-                                    {/* Incorrect PIN. {attemptsRemaining} attempts remaining. */}
-                                    Incorrect PIN. Please Try Again.
+                                    Incorrect PIN. {attemptsRemaining} attempts remaining.
                                 </Text>
                             </View>
                         )}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[
                                 styles.submitButton,
-                                !mPIN.every(digit => digit !== '') && {
+                                value.length < 4 && {
                                     backgroundColor: '#fff',
                                     borderColor: '#4d88ff',
                                     borderWidth: 1,
-                                    shadowColor: 'transparent', // Optional: remove shadow for disabled state
-                                    elevation: 0, // Optional: reduce elevation for disabled state
+                                    shadowColor: 'transparent',
+                                    elevation: 0,
                                 }
                             ]}
                             onPress={handleMPINSubmit}
-                            disabled={!mPIN.every(digit => digit !== '')}
+                            disabled={value.length < 4}
                         >
                             <Text style={[
                                 styles.submitButtonText,
-                                !mPIN.every(digit => digit !== '') && { color: '#666' }
+                                value.length < 4 && { color: '#666' }
                             ]}>
                                 LOGIN
                             </Text>
                         </TouchableOpacity>
 
-
-
                         <TouchableOpacity onPress={openPopup} style={styles.forgotContainer}>
                             <Icon name="help-circle-outline" size={16} color={colors.primary} />
-                            <Text style={styles.forgotText}>Forgot mPIN</Text>
+                            <Text style={styles.forgotText}>Forgot PIN</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.backButton}
                             onPress={() => setShowPinInput(false)}
                         >
@@ -295,28 +231,26 @@ const AuthScreen = () => {
                 ) : (
                     <View style={styles.card}>
                         <Text style={styles.title}>Fingerprint Authentication</Text>
-                        <TouchableOpacity 
-                        style={styles.fingerprintIconContainer} 
-                        onPress={() => {
-                            checkNetworkAndAuthenticate();
-                        }}
+                        <TouchableOpacity
+                            style={styles.fingerprintIconContainer}
+                            onPress={checkNetworkAndAuthenticate}
                         >
-                        <Icon name="finger-print" size={80} color={colors.primary} />
+                            <Icon name="finger-print" size={80} color={colors.primary} />
                         </TouchableOpacity>
 
                         <Text style={styles.fingerprintHint}>
                             Place your finger on the sensor to authenticate
                         </Text>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.backButton}
                             onPress={() => setShowFingerprint(false)}
                         >
                             <Icon name="arrow-back-outline" size={16} color={colors.primary} style={styles.backIcon} />
-                            <Text style={styles.backButtonText}>Use mPIN instead</Text>
+                            <Text style={styles.backButtonText}>Use PIN instead</Text>
                         </TouchableOpacity>
                     </View>
                 )}
-                
+
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>© 2025 ATOMWALK. All rights reserved.</Text>
                     <Text style={styles.versionText}>Version 1.0.8</Text>
@@ -331,7 +265,6 @@ const AuthScreen = () => {
                 onRetry={checkNetworkAndAuthenticate}
             />
         </SafeAreaView>
-
     );
 };
 
@@ -551,6 +484,17 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 5,
     },
+    input: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    padding: 10, // Added padding for better visibility
+    letterSpacing: 2, // Adds spacing between characters for PIN input
+    borderWidth: 1, // Added border for visibility
+    borderColor: '#ddd', // Light gray border
+    borderRadius: 8, // Rounded corners
+    backgroundColor: '#fff', // White background
+    marginBottom:15
+},
 });
 
 export default AuthScreen;

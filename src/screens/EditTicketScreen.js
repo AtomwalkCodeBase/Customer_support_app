@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,25 +12,22 @@ import {
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { addCustomerTicket, getTaskCategory } from '../services/productServices';
+import { addCustomerTicket } from '../services/productServices';
 import { SuccessModal, ErrorModal, Loader } from '../components/Modals';
-import DropdownPicker from '../components/DropdownPicker';
 import TextInputField from '../components/TextField';
 import FileUploadField from '../components/FilePicker';
 import { colors } from '../Styles/appStyle';
+import DropdownPicker from '../components/DropdownPicker';
 
 const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   const [formState, setFormState] = useState({
-    mainCategory: { id: null, name: ticket.task_category_name },
-    subCategory: { id: null, name: ticket.task_sub_category_name },
     description: '',
     fileUri: null,
     fileName: '',
     fileMimeType: '',
     hadAttachment: false,
-    hasSubCategories: false,
   });
-  const [categories, setCategories] = useState({ main: [], sub: [] });
+
   const [modalState, setModalState] = useState({
     isLoading: false,
     successVisible: false,
@@ -38,91 +35,37 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
     errorMessage: '',
   });
 
-  console.log("edit form ", ticket)
-
-  // Memoized category organization
-  const organizeCategories = useCallback((data) => {
-    const mains = data.filter((item) => item.e_type === 'TASK');
-    const subs = data.filter((item) => item.e_type === 'T_SUB');
-    setCategories({ main: mains, sub: subs });
-  }, []);
-
-  // Fetch task categories and populate for edit mode
-  const fetchTaskCategories = useCallback(async () => {
-    try {
-      const res = await getTaskCategory();
-      organizeCategories(res.data);
-
-      if (ticket?.task_category_id) {
-        const category = res.data.find((cat) => cat.id === ticket.task_category_id);
-        if (category) {
-          if (category.e_type === 'TASK') {
-            const hasSubCats = res.data.some((sub) => sub.parent_category_id === category.id && sub.e_type === 'T_SUB');
-            setFormState((prev) => ({
-              ...prev,
-              mainCategory: { id: category.id, name: category.name },
-              subCategory: hasSubCats ? prev.subCategory : { id: null, name: 'No Subcategory' },
-              hasSubCategories: hasSubCats,
-            }));
-          } else if (category.e_type === 'T_SUB') {
-            const parentCategory = res.data.find(
-              (cat) => cat.e_type === 'TASK' && cat.id === category.parent_category_id
-            );
-            if (parentCategory) {
-              setFormState((prev) => ({
-                ...prev,
-                mainCategory: { id: parentCategory.id, name: parentCategory.name },
-                subCategory: { id: category.id, name: category.name },
-                hasSubCategories: true,
-              }));
-            }
-          }
-        }
-      }
-    } catch (error) {
-      setModalState((prev) => ({
-        ...prev,
-        errorMessage: 'Failed to load categories',
-        errorVisible: true,
-      }));
-    }
-  }, [ticket, organizeCategories]);
-
-  // Load categories and populate form when modal opens
-  useEffect(() => {
+  // Load form data when modal opens
+  React.useEffect(() => {
     if (visible && ticket) {
-      fetchTaskCategories();
-      setFormState((prev) => ({
-        ...prev,
+      setFormState({
         description: ticket.remarks || '',
         fileUri: ticket.ref_file || null,
         fileName: ticket.ref_file ? 'attachment.jpg' : '',
         fileMimeType: ticket.ref_file ? 'image/jpeg' : '',
         hadAttachment: !!ticket.ref_file,
-      }));
+      });
     }
-  }, [visible, ticket, fetchTaskCategories]);
+  }, [visible, ticket]);
 
   // Reset form
   const resetForm = () => {
     setFormState({
-      mainCategory: { id: null, name: 'Select Category' },
-      subCategory: { id: null, name: 'Select Subcategory' },
-      description: ticket?.remarks || '',
-      fileUri: ticket?.ref_file || null,
-      fileName: ticket?.ref_file ? 'attachment.jpg' : '',
-      fileMimeType: ticket?.ref_file ? 'image/jpeg' : '',
-      hadAttachment: !!ticket?.ref_file,
-      hasSubCategories: false,
+      description: '',
+      fileUri: null,
+      fileName: '',
+      fileMimeType: '',
+      hadAttachment: false,
     });
   };
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!formState.description.trim()) {
+    // Check if form is empty (after clearing)
+    if (!formState.description.trim() && !formState.fileUri && !formState.fileName && !formState.fileMimeType) {
       setModalState((prev) => ({
         ...prev,
-        errorMessage: 'Please enter a description',
+        errorMessage: 'Please fill in the form before updating',
         errorVisible: true,
       }));
       return;
@@ -158,16 +101,9 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
       const res = await addCustomerTicket(formData);
       if (res.status === 200) {
         const updatedTicket = {
-          id: res.data.id,
-          task_category_id: formState.mainCategory.id,
-          task_sub_category_id: formState.subCategory.id || null,
+          ...ticket,
           remarks: res.data.remarks,
           ref_file: res.data.ref_file || null,
-          task_ref_id: res.data.task_ref_id,
-          task_status: res.data.task_status,
-          task_type: res.data.task_type,
-          task_type_display: res.data.task_type_display,
-          task_date: res.data.task_date,
         };
 
         onSave(updatedTicket);
@@ -189,7 +125,6 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   // Handle success modal close
   const handleSuccessClose = () => {
     setModalState((prev) => ({ ...prev, successVisible: false }));
-    resetForm();
     onClose();
   };
 
@@ -248,24 +183,22 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
 
           <ScrollView style={styles.formContainer}>
             <DropdownPicker
-              label="Main Category"
-              value={formState.mainCategory}
-              items={categories.main}
-              onSelect={() => {}} // Non-editable
-              placeholder="Select Category"
+              label="Category"
+              value={ticket?.task_category_name || 'N/A'}
+              items={[]}
+              onSelect={() => {}}
+              placeholder="Category"
               disabled={true}
               isLoading={modalState.isLoading}
             />
 
-            {formState.hasSubCategories && (
+            {ticket?.task_sub_category_name && (
               <DropdownPicker
                 label="Subcategory"
-                value={formState.subCategory}
-                items={categories.sub.filter(
-                  (sub) => sub.parent_category_id === formState.mainCategory.id
-                )}
-                onSelect={() => {}} // Non-editable
-                placeholder="Select Subcategory"
+                value={ticket.task_sub_category_name}
+                items={[]}
+                onSelect={() => {}}
+                placeholder="Subcategory"
                 disabled={true}
                 isLoading={modalState.isLoading}
               />
@@ -356,6 +289,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  categoryContainer: {
+    marginBottom: 15,
+  },
+  categoryLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 5,
+  },
+  categoryValue: {
+    fontSize: 16,
+    color: colors.text,
+    padding: 10,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 5,
+  },
   saveTicketButton: {
     marginVertical: 20,
     marginHorizontal: 15,
@@ -372,6 +321,24 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: 'rgba(255, 107, 107, 0.1)',
     opacity: 0.7,
+  },
+  disabledInput: {
+    backgroundColor: colors.backgroundLight,
+    opacity: 0.8,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 5,
+    padding: 10,
+  },
+  disabledContainer: {
+    marginBottom: 15,
+    position: 'relative',
+  },
+  disabledLabel: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: 5,
   },
 });
 

@@ -92,3 +92,9 @@ export const addCustomerTicketURL  = async () => {
 }
 
 export const getDbList = `${endpoint}/get_applicable_site/`;
+
+
+export const setUserPinURL =  async () => {
+  const db_name = await getDbName();
+  return `${endpoint}/set_user_pin/${db_name}/`;
+} 

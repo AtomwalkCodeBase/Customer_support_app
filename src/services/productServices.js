@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL, getCustomerDetailListURL, getCustomerListURL } from "./ConstantServices";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL, getCustomerDetailListURL, getCustomerListURL, setUserPinURL } from "./ConstantServices";
 import { authAxios, authAxiosFilePost, authAxiosPost, authAxiosPosts } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -149,17 +149,32 @@ export async function addCustomerTicket(request_data) {
   return authAxiosFilePost(url, request_data)
 }
 
-// export async function getCustomerInfo() {
-//   try {
 
-//       // let data = {};
-//       // if (customer_id) {
-//       //     data['customer_id'] = customer_id;
-//       // }
+export async function setUserPinView(o_pin, n_pin) {
+  const url = await setUserPinURL();
+  try {
+    const customerId = await AsyncStorage.getItem("Customer_id");
+    let customerIdNumber = parseInt(customerId, 10);
 
-//       return authAxios(getCustomerDetailListURL);
-//   } catch (error) {
-//       console.error("Error fetching profile info:", error);
-//       throw error;
-//   }
-// }
+    if (isNaN(customerIdNumber)) {
+      throw new Error("Invalid Customer ID: " + customerId);
+    }
+
+    const effectiveCustomerId = customerIdNumber;
+
+    let data = {
+      u_id: effectiveCustomerId,
+      o_pin: o_pin,
+      n_pin: n_pin,
+      user_type: "CUSTOMER",
+    };
+
+    console.log("Sending request to API with data:", data);
+    const response = await authAxiosPost(url, data);
+    console.log("API Response:", response);
+    return response;
+  } catch (error) {
+    console.error("Error in setUserPinView:", error.response ? error.response.data : error.message);
+    throw error;
+  }
+}  

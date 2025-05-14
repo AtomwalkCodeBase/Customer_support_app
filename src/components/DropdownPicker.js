@@ -21,6 +21,20 @@ const DropdownPicker = ({
 }) => {
   const [showPicker, setShowPicker] = React.useState(false);
 
+  // If disabled, just show the value without dropdown functionality
+  if (disabled) {
+    return (
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={[styles.dropdownButton, styles.disabledDropdown]}>
+          <Text style={styles.dropdownButtonText}>
+            {value || placeholder}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <>
       <View style={styles.inputGroup}>
@@ -33,10 +47,10 @@ const DropdownPicker = ({
           <Text
             style={[
               styles.dropdownButtonText,
-              !value.id && styles.placeholderText,
+              !value?.id && styles.placeholderText,
             ]}
           >
-            {value.name || placeholder}
+            {value?.name || placeholder}
           </Text>
           {!disabled && (
             <MaterialIcons name="arrow-drop-down" size={24} color="#888" />
@@ -61,12 +75,12 @@ const DropdownPicker = ({
                   </TouchableOpacity>
                 </View>
                 <ScrollView>
-                  {items.map((item) => (
+                  {items?.map((item) => (
                     <TouchableOpacity
                       key={item.id}
                       style={[
                         styles.pickerItem,
-                        value.id === item.id && styles.pickerItemSelected,
+                        value?.id === item.id && styles.pickerItemSelected,
                       ]}
                       onPress={() => {
                         onSelect(item);
@@ -76,12 +90,12 @@ const DropdownPicker = ({
                       <Text
                         style={[
                           styles.pickerItemText,
-                          value.id === item.id && styles.pickerItemTextSelected,
+                          value?.id === item.id && styles.pickerItemTextSelected,
                         ]}
                       >
                         {item.name}
                       </Text>
-                      {value.id === item.id && (
+                      {value?.id === item.id && (
                         <Feather name="check" size={20} color="#FF6B6B" />
                       )}
                     </TouchableOpacity>
@@ -118,8 +132,9 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   disabledDropdown: {
-    backgroundColor: '#F0F0F0',
-    opacity: 0.7,
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E0E0E0',
+    opacity: 0.8,
   },
   dropdownButtonText: {
     fontSize: 16,

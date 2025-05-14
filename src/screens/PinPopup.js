@@ -10,7 +10,7 @@ const PinPopup = () => {
     useEffect(() => {
         const checkPopupPreference = async () => {
             const hasDeclinedPopup = await AsyncStorage.getItem('declinePinSetup');
-            const userPin = await AsyncStorage.getItem('Password');
+            const userPin = await AsyncStorage.getItem('userBiometric');
             if (!hasDeclinedPopup&&!userPin) {
                 setIsPopupVisible(true);
             }
@@ -18,9 +18,10 @@ const PinPopup = () => {
         checkPopupPreference();
     }, []);
 
-    const handleYes = () => {
+    const handleYes = async () => {
+        await AsyncStorage.setItem('userBiometric', 'true');
         setIsPopupVisible(false);
-        router.push('ResetPassword'); // Navigate to PinSetup screen
+        // router.push('ResetPassword'); // Navigate to PinSetup screen
     };
 
     const handleNo = async () => {
@@ -47,7 +48,7 @@ const PinPopup = () => {
 
                 {/* Message */}
                 <Text style={styles.message}>
-                    Would you like to set your PIN?
+                    Would you like to set your BioMetric?
                 </Text>
 
                 {/* Buttons */}

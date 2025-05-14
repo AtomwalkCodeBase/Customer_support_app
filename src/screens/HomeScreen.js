@@ -122,14 +122,14 @@ export default function TicketListScreen() {
 
   // Handle edit ticket
   const handleEditTicket = (ticket) => {
-    const mappedTicket = {
-      id: ticket.id,
-      remarks: ticket.remarks || '',
-      image: ticket.image || null,
-      task_category_name: ticket.task_category_name || null,
-      task_sub_category_name: ticket.task_sub_category_name || null,
-    };
-    setSelectedTicket(mappedTicket);
+    // const mappedTicket = {
+    //   id: ticket.id,
+    //   remarks: ticket.remarks || '',
+    //   image: ticket.image || null,
+    //   task_category_name: ticket.task_category_name || null,
+    //   task_sub_category_name: ticket.task_sub_category_name || null,
+    // };
+    setSelectedTicket(ticket);
     setIsEditMode(true);
     setModalVisible(true);
   };
