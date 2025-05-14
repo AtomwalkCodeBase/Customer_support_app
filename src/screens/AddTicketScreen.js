@@ -20,10 +20,10 @@ import FileUploadField from '../components/FilePicker';
 import { colors } from '../Styles/appStyle';
 
 const AddTicketScreen = ({ visible, onClose, onSave }) => {
-  // Form state
+  // Form state: Store full category objects instead of just IDs
   const [formState, setFormState] = useState({
-    mainCategoryId: null,
-    subCategoryId: null,
+    mainCategory: null, // { id, name } or null
+    subCategory: null, // { id, name } or null
     description: '',
     file: null,
   });
@@ -44,6 +44,7 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
   const fetchTaskCategories = useCallback(async () => {
     try {
       const res = await getTaskCategory();
+      console.log('Task Categories API Response:', res.data); // Debug API response
       setCategories({
         main: res.data.filter((item) => item.e_type === 'TASK'),
         sub: res.data.filter((item) => item.e_type === 'T_SUB'),
@@ -59,20 +60,20 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
 
   // Check for subcategories when main category changes
   useEffect(() => {
-    if (formState.mainCategoryId) {
+    if (formState.mainCategory?.id) {
       const subCategories = categories.sub.filter(
-        (sub) => sub.parent_category_id === formState.mainCategoryId
+        (sub) => sub.parent_category_id === formState.mainCategory.id
       );
       setHasSubCategories(subCategories.length > 0);
       setFormState((prev) => ({
         ...prev,
-        subCategoryId: null, // Reset subcategory when main category changes
+        subCategory: null, // Reset subcategory when main category changes
       }));
     } else {
       setHasSubCategories(false);
-      setFormState((prev) => ({ ...prev, subCategoryId: null }));
+      setFormState((prev) => ({ ...prev, subCategory: null }));
     }
-  }, [formState.mainCategoryId, categories.sub]);
+  }, [formState.mainCategory, categories.sub]);
 
   // Load categories when modal opens
   useEffect(() => {
@@ -82,11 +83,16 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     }
   }, [visible, fetchTaskCategories]);
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('formState:', formState);
+  }, [formState]);
+
   // Reset form
   const resetForm = () => {
     setFormState({
-      mainCategoryId: null,
-      subCategoryId: null,
+      mainCategory: null,
+      subCategory: null,
       description: '',
       file: null,
     });
@@ -105,7 +111,7 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
       return;
     }
 
-    if (!formState.mainCategoryId) {
+    if (!formState.mainCategory?.id) {
       setModalState({
         ...modalState,
         errorMessage: 'Please select a category',
@@ -127,9 +133,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
       formData.append('cust_id', customerId);
       formData.append('call_mode', 'TICKET_ADD');
       formData.append('remarks', formState.description.trim());
-      formData.append('task_category_id', formState.mainCategoryId.toString());
-      if (formState.subCategoryId) {
-        formData.append('task_sub_category_id', formState.subCategoryId.toString());
+      formData.append('task_category_id', formState.mainCategory.id.toString());
+      if (formState.subCategory?.id) {
+        formData.append('task_sub_category_id', formState.subCategory.id.toString());
       }
 
       if (formState.file) {
@@ -143,21 +149,20 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
 
       // Make API call
       const res = await addCustomerTicket(formData);
-      console.log("data", res.data);
-      
+      console.log('API Response:', res.data);
+
       if (res.status === 200) {
         // Construct ticket object for onSave
         const newTicket = {
           id: res.data.id,
-          task_category_id: formState.mainCategoryId,
-          task_sub_category_id: formState.subCategoryId || null,
+          task_category_id: formState.mainCategory.id,
+          task_sub_category_id: formState.subCategory?.id || null,
           remarks: res.data.remarks,
           ref_file: res.data.ref_file || null,
           task_ref_id: res.data.task_ref_id,
           task_status: res.data.task_status,
           task_type: res.data.task_type,
           task_type_display: res.data.task_type_display,
-          // task_date: res.data.task_date,
           tempId: Date.now().toString(),
         };
 
@@ -209,12 +214,6 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     setFormState({ ...formState, file: null });
   };
 
-  // Get selected category name for DropdownPicker
-  const getCategoryName = (id, categoryList) => {
-    const category = categoryList.find((cat) => cat.id === id);
-    return category ? category.name : 'Select Category';
-  };
-
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -235,9 +234,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
           <ScrollView style={styles.formContainer}>
             <DropdownPicker
               label="Main Category"
-              value={{ id: formState.mainCategoryId, name: getCategoryName(formState.mainCategoryId, categories.main) }}
+              value={formState.mainCategory} // Pass the full category object
               items={categories.main}
-              onSelect={(item) => setFormState({ ...formState, mainCategoryId: item.id })}
+              onSelect={(item) => setFormState({ ...formState, mainCategory: item })}
               placeholder="Select Category"
               disabled={modalState.isLoading}
               isLoading={modalState.isLoading}
@@ -246,9 +245,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
             {hasSubCategories && (
               <DropdownPicker
                 label="Subcategory"
-                value={{ id: formState.subCategoryId, name: getCategoryName(formState.subCategoryId, categories.sub) }}
-                items={categories.sub.filter((sub) => sub.parent_category_id === formState.mainCategoryId)}
-                onSelect={(item) => setFormState({ ...formState, subCategoryId: item.id })}
+                value={formState.subCategory} // Pass the full subcategory object
+                items={categories.sub.filter((sub) => sub.parent_category_id === formState.mainCategory?.id)}
+                onSelect={(item) => setFormState({ ...formState, subCategory: item })}
                 placeholder="Select Subcategory"
                 disabled={modalState.isLoading}
                 isLoading={modalState.isLoading}

@@ -21,14 +21,14 @@ const DropdownPicker = ({
 }) => {
   const [showPicker, setShowPicker] = React.useState(false);
 
-  // If disabled, just show the value without dropdown functionality
+  // If disabled, show the value's name or placeholder
   if (disabled) {
     return (
       <View style={styles.inputGroup}>
         <Text style={styles.label}>{label}</Text>
         <View style={[styles.dropdownButton, styles.disabledDropdown]}>
           <Text style={styles.dropdownButtonText}>
-            {value || placeholder}
+            {value?.name || placeholder} {/* Use value?.name for disabled state */}
           </Text>
         </View>
       </View>
