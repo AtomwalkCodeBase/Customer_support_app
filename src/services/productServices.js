@@ -169,7 +169,7 @@ export async function setUserPinView(o_pin, n_pin) {
       user_type: "CUSTOMER",
     };
 
-    console.log("Sending request to API with data:", data);
+    // console.log("Sending request to API with data:", data);
     const response = await authAxiosPost(url, data);
     console.log("API Response:", response);
     return response;

@@ -14,6 +14,7 @@ import {
     Image,
     Dimensions,
     SafeAreaView,
+    Animated,
 } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import Logos from "../../assets/images/Atom_walk_logo.jpg";
@@ -42,10 +43,21 @@ const AuthScreen = () => {
     const [isNetworkError, setIsNetworkError] = useState(false);
     const [showPinInput, setShowPinInput] = useState(false);
     const [showFingerprint, setShowFingerprint] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
+    const shakeAnim = new Animated.Value(0);
     const maxAttempts = 5;
 
     const openPopup = () => {setModalVisible(true)};
+
+      const triggerShake = () => {
+        Animated.sequence([
+          Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+        ]).start();
+      };
 
     useEffect(() => {
         const checkBiometricOnLoad = async () => {
@@ -95,11 +107,17 @@ const AuthScreen = () => {
         } else {
             const remaining = attemptsRemaining - 1;
             setAttemptsRemaining(remaining);
-            if (remaining > 0) {
-                Alert.alert('Incorrect PIN', `${remaining} attempts remaining`);
-            } else {
-                Alert.alert('Account Locked', 'Too many incorrect attempts.');
+             if (remaining < 4 ) {
+            setErrorMessage('Incorrect PIN,Try again...');
+            triggerShake();
+            return;
             }
+            // if (remaining > 0) {
+            //     // Alert.alert('Incorrect PIN', `${remaining} attempts remaining`);
+            //     Alert.alert('Incorrect PIN', `Try again...`);
+            // } else {
+            //     Alert.alert('Account Locked', 'Too many incorrect attempts.');
+            // }
         }
     };
 
@@ -215,6 +233,15 @@ const AuthScreen = () => {
                                 LOGIN
                             </Text>
                         </TouchableOpacity>
+
+                        {errorMessage ? (
+                                        <Animated.View style={[styles.errorContainer, { transform: [{ translateX: shakeAnim }] }]}>
+                                          <MaterialIcons name="error-outline" size={18} color={colors.error} />
+                                          <Animated.Text style={styles.errorText}>
+                                            {errorMessage}
+                                          </Animated.Text>
+                                        </Animated.View>
+                                      ) : null}
 
                         <TouchableOpacity onPress={openPopup} style={styles.forgotContainer}>
                             <Icon name="help-circle-outline" size={16} color={colors.primary} />
@@ -495,6 +522,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', // White background
     marginBottom:15
 },
+ errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    backgroundColor: `${colors.error}15`,
+    padding: 12,
+    borderRadius: 8,
+  },
 });
 
 export default AuthScreen;
