@@ -44,6 +44,7 @@ const AuthScreen = () => {
     const [showPinInput, setShowPinInput] = useState(false);
     const [showFingerprint, setShowFingerprint] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [showmodal, setShowModal] = useState(false);
 
     const shakeAnim = new Animated.Value(0);
     const maxAttempts = 5;
@@ -73,7 +74,7 @@ const AuthScreen = () => {
     const checkNetworkAndAuthenticate = async () => {
         const biometricEnabled = await AsyncStorage.getItem("userBiometric");
         if (!biometricEnabled) {
-            Alert.alert("Biometric Authentication", "Please enable biometric authentication.");
+            setShowModal(true)
             return;
         }
 
@@ -243,10 +244,10 @@ const AuthScreen = () => {
                                         </Animated.View>
                                       ) : null}
 
-                        <TouchableOpacity onPress={openPopup} style={styles.forgotContainer}>
+                        {/* <TouchableOpacity onPress={openPopup} style={styles.forgotContainer}>
                             <Icon name="help-circle-outline" size={16} color={colors.primary} />
                             <Text style={styles.forgotText}>Forgot PIN</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity
                             style={styles.backButton}
                             onPress={() => setShowPinInput(false)}
@@ -270,7 +271,10 @@ const AuthScreen = () => {
                         </Text>
                         <TouchableOpacity
                             style={styles.backButton}
-                            onPress={() => setShowFingerprint(false)}
+                            onPress={() => {
+                                setShowFingerprint(false)
+                                setShowPinInput(true);
+                            }}
                         >
                             <Icon name="arrow-back-outline" size={16} color={colors.primary} style={styles.backIcon} />
                             <Text style={styles.backButtonText}>Use PIN instead</Text>
@@ -291,6 +295,10 @@ const AuthScreen = () => {
                 onClose={() => setIsNetworkError(false)}
                 onRetry={checkNetworkAndAuthenticate}
             />
+            <ErrorModal
+                visible={showmodal}
+                message="Biometric authentication is not enabled. Please enable it in settings."
+                onClose={() => setShowModal(false)}></ErrorModal>
         </SafeAreaView>
     );
 };
