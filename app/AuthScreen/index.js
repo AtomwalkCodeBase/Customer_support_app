@@ -42,6 +42,8 @@ const scaleHeight = (size) => (height / 812) * size;
 
 const LoginScreen = () => {
   const router = useRouter();
+  const [dbName, setDBName] = useState('');
+  const [previousDbName, setPreviousDbName] = useState('');
   const [mobileNumber, setMobileNumber] = useState("");
   const [pin, setPin] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -54,17 +56,24 @@ const LoginScreen = () => {
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const isLoginDisabled = !mobileNumber || !pin;
 
-  useEffect(() => {
-    const fetchUserPin = async () => {
-      try {
-        const storedPin = await AsyncStorage.getItem("userPin");
-        setUserPin(storedPin);
-      } catch (error) {
-        console.error("Error fetching userPin from AsyncStorage:", error);
+useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      // Fetch stored mobile number
+      const storedMobileNumber = await AsyncStorage.getItem("mobileNumber");
+      if (storedMobileNumber) {
+        setMobileNumber(storedMobileNumber); // Prefill the mobile number field
       }
-    };
-    fetchUserPin();
-  }, []);
+
+      // Fetch stored PIN
+      const storedPin = await AsyncStorage.getItem("userPin");
+      setUserPin(storedPin);
+    } catch (error) {
+      console.error("Error fetching data from AsyncStorage:", error);
+    }
+  };
+  fetchUserData();
+}, []);
 
     useEffect(() => {
   const keyboardDidShowListener = Keyboard.addListener(
@@ -99,34 +108,55 @@ const LoginScreen = () => {
   }, [selectedCompany, dbList]);
 
   const fetchDbName = async () => {
-    try {
-      const DBData = await getDBListInfo();
-      setDbList(DBData.data || []);
-
-      if (DBData.data?.length === 1) {
-        const company = DBData.data[0];
-        setSelectedCompany({
-          label: company.ref_cust_name,
-          value: company.ref_cust_name,
-        });
-      }
-    } catch (error) {
+     try {
+    const DBData = await getDBListInfo();
+    setDbList(DBData.data || []);
+    
+    // Load both current and previous dbNames
+    const savedDBName = await AsyncStorage.getItem('dbName');
+    const prevDBName = await AsyncStorage.getItem('previousDbName') || savedDBName;
+    setPreviousDbName(prevDBName);
+    
+    const matchingCompany = DBData.data.find(company => {
+      const companyDbName = company.name.replace(/^SD_/, '');
+      return companyDbName === savedDBName;
+    });
+    
+    if (matchingCompany) {
+      setSelectedCompany({
+        label: matchingCompany.ref_cust_name,
+        value: matchingCompany.ref_cust_name
+      });
+    } else if (DBData.data?.length === 1) {
+      const firstCompany = DBData.data[0];
+      const defaultDbName = firstCompany.name.replace(/^SD_/, '');
+      
+      setSelectedCompany({
+        label: firstCompany.ref_cust_name,
+        value: firstCompany.ref_cust_name
+      });
+      await AsyncStorage.multiSet([
+        ['dbName', defaultDbName],
+        ['previousDbName', defaultDbName]
+      ]);
+    }
+  } catch (error) {
       console.error("Error fetching DB List:", error);
     }
   };
 
   const handleCompanyChange = async (item) => {
-    if (item) {
-      setSelectedCompany(item);
-      const selected = dbList.find(
-        (company) => company.ref_cust_name === item.value
-      );
-      if (selected) {
-        const dbName = selected.name.replace("SD_", "");
-        await AsyncStorage.setItem("dbName", dbName);
-      }
-    }
-    setCompanyError("");
+  if (!item) return;
+
+  setSelectedCompany(item);
+  const selected = dbList.find(c => c.ref_cust_name === item.value);
+  
+  if (selected) {
+    const newDbName = selected.name.replace(/^SD_/, ''); 
+    setDBName(newDbName); // Update state only
+  }
+  
+  setCompanyError('');
   };
 
   // const getDropdownValue = () => {
@@ -169,9 +199,28 @@ const LoginScreen = () => {
       return;
     }
 
+    const prevDbName = await AsyncStorage.getItem('previousDbName');
+
+        // If available, set it as the current dbName
+    if (prevDbName) {
+      await AsyncStorage.setItem('dbName', prevDbName);
+    }
+
     setLoading(true);
 
     try {
+      // First, update dbName if a new company was selected
+    if (selectedCompany) {
+      const selected = dbList.find(c => c.ref_cust_name === selectedCompany.value);
+      if (selected) {
+        const newDbName = selected.name.replace(/^SD_/, '');
+        await AsyncStorage.multiSet([
+          ['dbName', newDbName],
+          ['previousDbName', newDbName]
+        ]);
+      }
+    }
+
       const payload = {
         mobile_number: mobileNumber,
         pin: parseInt(pin),
