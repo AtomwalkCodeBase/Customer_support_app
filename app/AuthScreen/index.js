@@ -342,7 +342,7 @@ const LoginScreen = () => {
           </ScrollView>
         </MainContent>
         <Footer style={styles.fixedFooter}>
-          <FooterText>Version Code: 1.0.8</FooterText>
+          <FooterText>Version Code: 1.0.1</FooterText>
         </Footer>
       </Container>
     </SafeAreaContainer>

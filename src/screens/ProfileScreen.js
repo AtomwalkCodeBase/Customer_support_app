@@ -6,6 +6,7 @@ import { AppContext } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { getProfileInfo } from '../services/authServices';
+import ConfirmationModal from '../components/ConfirmationModal'
 
 const ProfileScreen = () => {
   // Profile data
@@ -28,9 +29,10 @@ const ProfileScreen = () => {
   };
   const { logout } = useContext(AppContext);
   const [userPin, setUserPin] = useState(null);
-    const [profileImg, setProfileImg] = useState({});
+  const [profileImg, setProfileImg] = useState({});
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const router = useRouter();
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
       useEffect(() => {
         const fetchUserPin = async () => {
@@ -208,7 +210,7 @@ const ProfileScreen = () => {
             <View style={styles.optionDivider} />
             
             {/* Logout */}
-            <TouchableOpacity style={styles.optionItem} onPress={logout}>
+            <TouchableOpacity style={styles.optionItem} onPress={() => setIsLogoutModalVisible(true)}>
               <View style={[styles.optionIconContainer, { backgroundColor: colors.errorTransparent }]}>
                 <MaterialIcons name="logout" size={22} color={colors.error} />
               </View>
@@ -226,7 +228,21 @@ const ProfileScreen = () => {
       {/* <TouchableOpacity style={styles.fab} onPress={handlePressMessage}>
         <MaterialIcons name="message" size={24} color={colors.white} />
       </TouchableOpacity> */}
+
+        <ConfirmationModal
+        visible={isLogoutModalVisible} // Ensure this prop is correctly passed
+        message="Are you sure you want to logout?"
+        onConfirm={() => {
+          setIsLogoutModalVisible(false); // Close the modal
+          logout(); // Perform the logout action
+        }}
+        onCancel={() => setIsLogoutModalVisible(false)} // Close the modal on cancel
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </SafeAreaView>
+
+    
   );
 };
 
