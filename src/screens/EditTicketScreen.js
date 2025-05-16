@@ -43,7 +43,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         fileUri: ticket.ref_file || null,
         fileName: ticket.ref_file ? 'attachment.jpg' : '',
         fileMimeType: ticket.ref_file ? 'image/jpeg' : '',
-        hadAttachment: !!ticket.ref_file,
+        hadAttachment: !ticket.ref_file,
       });
     }
   }, [visible, ticket]);
@@ -62,7 +62,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   // Handle form submission
   const handleSubmit = async () => {
     // Check if form is empty (after clearing)
-    if (!formState.description.trim() && !formState.fileUri && !formState.fileName && !formState.fileMimeType) {
+    if (!formState.description.trim() && !formState.fileUri && !formState.hadAttachment) {
       setModalState((prev) => ({
         ...prev,
         errorMessage: 'Please fill in the form before updating',
@@ -85,11 +85,12 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
       formData.append('remarks', formState.description.trim());
       formData.append('task_id', ticket.id.toString());
 
-      if (!formState.fileUri && formState.hadAttachment) {
-        formData.append('remove_attachment', 'true');
-      }
-
-      if (formState.fileUri && !formState.hadAttachment) {
+      // Handle file logic
+      if (!formState.fileUri && formState.hadAttachment === false) {
+        // Case: No image selected or image cleared
+        formData.append('uploaded_file', null); // Send empty string
+      } else {
+        // Case: New image selected
         const fileExtension = formState.fileName.split('.').pop() || 'jpg';
         formData.append('uploaded_file', {
           uri: Platform.OS === 'ios' ? formState.fileUri.replace('file://', '') : formState.fileUri,
@@ -98,20 +99,39 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         });
       }
 
+      // Debug: Log FormData
+      // console.log('FormData contents:');
+      // for (let [key, value] of formData._parts) {
+      //   console.log(`${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`);
+      // }
+
       const res = await addCustomerTicket(formData);
+      // console.log('API Full Response:', {
+      //   status: res.status,
+      //   data: res.data,
+      //   headers: res.headers,
+      // });
+
       if (res.status === 200) {
+        // Handle empty or incomplete response
         const updatedTicket = {
           ...ticket,
-          remarks: res.data.remarks,
-          ref_file: res.data.ref_file || null,
+          remarks: res.data?.remarks || formState.description.trim(),
+          // Set ref_file to null if image was cleared, or use API response if available
+          ref_file: formState.fileUri ? res.data?.ref_file || null : null,
         };
+
+        if (!res.data || Object.keys(res.data).length === 0) {
+          console.warn('API returned empty response, using local formState');
+        }
 
         onSave(updatedTicket);
         setModalState((prev) => ({ ...prev, successVisible: true }));
       } else {
-        throw new Error('Failed to update ticket');
+        throw new Error(`Unexpected status code: ${res.status}`);
       }
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       setModalState((prev) => ({
         ...prev,
         errorMessage: error.message || 'Failed to update ticket',
@@ -155,15 +175,15 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   };
 
   // Remove file
-  const removeFile = () => {
-    setFormState((prev) => ({
-      ...prev,
-      fileUri: null,
-      fileName: '',
-      fileMimeType: '',
-    }));
-  };
-
+    const removeFile = () => {
+      setFormState((prev) => ({
+        ...prev,
+        fileUri: null,
+        fileName: '',
+        fileMimeType: '',
+        hadAttachment: false, // <- Add this to signal image was removed
+      }));
+    };
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>

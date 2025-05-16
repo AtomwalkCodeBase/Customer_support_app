@@ -54,15 +54,16 @@ const Header = ({
             onChangeText={onSearchChange}
             placeholderTextColor="#888"
           />
-          {searchText ? (
+          {searchText && 
             <TouchableOpacity onPress={onClearSearch}>
               <MaterialIcons name="clear" size={24} color="#888" />
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity>
-              <Feather name="mic" size={20} color="#888" style={styles.micIcon} />
-            </TouchableOpacity>
-          )}
+          // ) : (
+          //   <TouchableOpacity>
+          //     <Feather name="mic" size={20} color="#888" style={styles.micIcon} />
+          //   </TouchableOpacity>
+          // )
+          }
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
           <Feather name="sliders" size={20} color="white" />

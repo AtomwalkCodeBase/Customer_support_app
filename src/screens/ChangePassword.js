@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import HeaderComponent from './HeaderComponent';
 import { setUserPinView } from '../services/productServices';
 import { colors } from '../Styles/appStyle';
+import { ErrorModal, Loader, SuccessModal } from '../components/Modals';
 
 const ResetPasswordScreen = () => {
   const [oldPin, setOldPin] = useState('');
@@ -15,6 +16,11 @@ const ResetPasswordScreen = () => {
   const [isFocusedOld, setIsFocusedOld] = useState(false);
   const [isFocusedNew, setIsFocusedNew] = useState(false);
   const [isFocusedConfirm, setIsFocusedConfirm] = useState(false);
+  const [modalState, setModalState] = useState({
+  successVisible: false,
+  errorVisible: false,
+  isLoading: false,
+});
 
   const shakeAnim = new Animated.Value(0); // Animation for shaking error message
   const router = useRouter();
@@ -50,25 +56,37 @@ const ResetPasswordScreen = () => {
     }
 
     try {
-      console.log('Submitting:', { oldPin, newPin });
+      // console.log('Submitting:', { oldPin, newPin });
+      setModalState(prev => ({ ...prev, isLoading: true }));
       const response = await setUserPinView(oldPin, newPin);
-      console.log('API Response:', response);
+      // console.log('API Response:', response);
 
       if (response.status) {
         await AsyncStorage.setItem('userPin', newPin);
-        Alert.alert('Success', 'Your PIN has been updated successfully.');
-        router.push({ pathname: 'home' });
+        setModalState({ successVisible: true, errorVisible: false, isLoading: false });
+        // Alert.alert('Success', 'Your PIN has been updated successfully.');
       } else {
         setErrorMessage(response.message || 'Failed to update PIN.');
+        setModalState({ successVisible: false, errorVisible: true, isLoading: false });
         triggerShake();
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message || 'An error occurred while updating your PIN.';
       console.error('Error in handleSubmit:', errorMsg);
+      setModalState({ successVisible: false, errorVisible: true, isLoading: false });
       setErrorMessage(errorMsg); // Displays "Old Pin is not valid" from API
       triggerShake();
     }
   };
+
+    const handleSuccessClose = () => {
+      setModalState(prev => ({ ...prev, successVisible: false }));
+      router.push({ pathname: 'home' });
+    };
+
+    const handleErrorClose = () => {
+      setModalState(prev => ({ ...prev, errorVisible: false }));
+    };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -196,6 +214,20 @@ const ResetPasswordScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+     <SuccessModal
+  visible={modalState.successVisible}
+  message="Your PIN has been updated successfully."
+  onClose={handleSuccessClose}
+/>
+
+          <ErrorModal
+  visible={modalState.errorVisible}
+  message={errorMessage || "Something went wrong"}
+  onClose={handleErrorClose}
+/>
+
+                 <Loader visible={modalState.isLoading} message="Please Wait..." />
     </SafeAreaView>
   );
 };
