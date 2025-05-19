@@ -1,12 +1,13 @@
 import React, { createContext, useState, useCallback } from 'react';
 import { getCustomerId } from '../src/services/localStore';
-import { getTaskCategory, getTasksList } from '../src/services/productServices';
+import { getCustomerDetailList, getTaskCategory, getTasksList } from '../src/services/productServices';
 
 export const TaskContext = createContext();
 
 export const TaskProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({ visible: false, message: '' });
 
@@ -19,9 +20,11 @@ export const TaskProvider = ({ children }) => {
     } catch (error) {
       console.log('Failed to fetch categories:', error);
       setError({ visible: true, message: 'Failed to load categories' });
-    } finally {
-      setLoading(false);
     }
+    setTimeout(() => {
+       setLoading(false);
+    }, 1000);
+    
   }, []);
 
   // Fetch user tasks
@@ -34,10 +37,11 @@ export const TaskProvider = ({ children }) => {
     } catch (error) {
       console.log('Failed to fetch tasks:', error.message);
       setError({ visible: true, message: 'Failed to load tasks' });
-    } finally {
-      setLoading(false);
-    }
+    }setTimeout(() => {
+       setLoading(false);
+    }, 1000);
   }, []);
+
 
   // Clear error
   const clearError = () => {
@@ -55,6 +59,7 @@ export const TaskProvider = ({ children }) => {
         fetchTaskCategories,
         fetchTasks,
         clearError,
+
       }}
     >
       {children}

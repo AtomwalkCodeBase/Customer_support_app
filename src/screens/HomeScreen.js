@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,6 +19,8 @@ import { RefreshControl } from 'react-native';
 import { colors } from '../Styles/appStyle';
 import EditTicketScreen from './EditTicketScreen';
 import { TaskContext } from '../../context/TaskContext';
+import { getCustomerDetailList } from '../services/productServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { TaskContext } from '../context/TaskContext';
 
 export default function TicketListScreen() {
@@ -40,6 +42,9 @@ export default function TicketListScreen() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isLoading, setisLoading] = useState(false);
+  const [isError, setisError] = useState({ visible: false, message: '' });
+  const [profile, setProfile] = useState({});
 
   const router = useRouter();
 
@@ -54,6 +59,28 @@ export default function TicketListScreen() {
     };
     loadData();
   }, [fetchTaskCategories, fetchTasks]);
+
+useEffect(() => {
+  const fetchCustomerDetails = async () => {
+    try {
+      setisLoading(true);
+      const customerId = await AsyncStorage.getItem('Customer_id');
+      const res = await getCustomerDetailList();
+      const customer = res.data.find(
+        (item) => item.id?.toString() === customerId?.toString()
+      );
+      setProfile(customer || {});
+    } catch (error) {
+      console.log('Failed to fetch Customer Details:', error.message);
+      setisError({ visible: true, message: 'Failed to load Customer Details' });
+    } finally {
+      setisLoading(false);
+    }
+  };
+
+  fetchCustomerDetails();
+}, []);
+
 
   // Handle category selection from dropdown
   const handleCategorySelect = (category) => {
@@ -79,23 +106,25 @@ export default function TicketListScreen() {
     ...categories.filter((cat) => cat.e_type === 'TASK'),
   ];
 
-  // Filter tickets based on search text and selected category
-  const filteredTickets = tickets.filter((ticket) => {
-    const matchesSearch =
-      searchText === '' ||
-      (ticket.task_ref_id &&
-        ticket.task_ref_id.toLowerCase().includes(searchText.toLowerCase())) ||
-      (ticket.remarks &&
-        ticket.remarks.toLowerCase().includes(searchText.toLowerCase()));
+// Filter tickets based on search text and selected category
+  const filteredTickets = useMemo(() => {
+    return tickets.filter((ticket) => {
+      const matchesSearch =
+        !searchText ||
+        (ticket.task_ref_id &&
+          ticket.task_ref_id.toLowerCase().includes(searchText.toLowerCase())) ||
+        (ticket.remarks &&
+          ticket.remarks.toLowerCase().includes(searchText.toLowerCase()));
 
-    const matchesCategory =
-      !selectedCategory ||
-      selectedCategory.id === 'all' ||
-      (ticket.task_category_id &&
- ticket.task_category_id.toString() === selectedCategory.id.toString());
+      const matchesCategory =
+        !selectedCategory ||
+        selectedCategory.id === 'all' ||
+        (ticket.task_category_name &&
+          ticket.task_category_name === selectedCategory.name);
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    });
+  }, [tickets, searchText, selectedCategory]);
 
   // Handle ticket creation or update
   const handleSaveTicket = async (ticketData) => {
@@ -122,13 +151,6 @@ export default function TicketListScreen() {
 
   // Handle edit ticket
   const handleEditTicket = (ticket) => {
-    // const mappedTicket = {
-    //   id: ticket.id,
-    //   remarks: ticket.remarks || '',
-    //   image: ticket.image || null,
-    //   task_category_name: ticket.task_category_name || null,
-    //   task_sub_category_name: ticket.task_sub_category_name || null,
-    // };
     setSelectedTicket(ticket);
     setIsEditMode(true);
     setModalVisible(true);
@@ -168,11 +190,12 @@ export default function TicketListScreen() {
         />
 
         <Header
-          ticket={tickets}
+          profile={profile || {}}
           searchText={searchText}
           onSearchChange={setSearchText}
           onClearSearch={handleClearSearch}
           onFilterPress={() => setShowDropdown(true)}
+          loading={isLoading}
         />
 
         <Text style={styles.listTitle}>List of Tickets</Text>

@@ -41,7 +41,7 @@ export const checkoutURL = `${endpoint}/order_checkout/${db_name}/`;
 // export const userTaskListURL = `${endpoint}/user_task/${db_name}/`;
 export const addLeadURL = `${endpoint}/add_lead/${db_name}/`;
 export const getCustomerListURL = `${endpoint}/customer_list/${db_name}/`;
-export const getCustomerDetailListURL = `${endpoint}/customer_detail_list/${db_name}/`;
+// export const getCustomerDetailListURL = `${endpoint}/customer_detail_list/${db_name}/`;
 export const getLeadListURL = `${endpoint}/lead_list/${db_name}/`;
 export const getLeadDataListURL = `${endpoint}/lead_data_list/${db_name}/`;
 export const addTaskURL = `${endpoint}/add_task/${db_name}/`;
@@ -102,4 +102,9 @@ export const setUserPinURL =  async () => {
 export const profileInfoURL = async () => {
    const db_name = await getDbName();
   return  `${endpoint}/profile_info/${db_name}/`;
+}
+
+export const getCustomerDetailListURL = async () => {
+  const db_name = await getDbName();
+  return `${endpoint}/customer_detail_list/${db_name}/`;
 }

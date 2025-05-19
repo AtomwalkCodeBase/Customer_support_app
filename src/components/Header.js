@@ -6,42 +6,122 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Animated,
 } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { getProfileInfo } from '../services/authServices';
 
 const Header = ({
+  profile,
   searchText,
   onSearchChange,
   onClearSearch,
   onFilterPress,
-  // onNotificationPress,
+  loading = false, // New prop to control skeleton loader
 }) => {
-    const [profile, setProfile] = useState({});
+  // Shimmer animation setup
+  const shimmerAnim = useState(new Animated.Value(0))[0];
 
-    useEffect(() => {
-      getProfileInfo().then((res) => {
-        setProfile(res.data);
-      });
-    }, []);
-  
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [shimmerAnim]);
+
+  // Calculate shimmer translation
+  const shimmerTranslateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-100, 100],
+  });
+
+  if (loading) {
+    return (
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View style={styles.userInfo}>
+            {/* Skeleton for avatar */}
+            <View style={[styles.avatar, styles.skeletonAvatar]}>
+              <Animated.View
+                style={[
+                  styles.shimmer,
+                  {
+                    transform: [{ translateX: shimmerTranslateX }],
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.userText}>
+              {/* Skeleton for greeting */}
+              <View style={[styles.skeletonText, { width: 60, height: 14, marginBottom: 4 }]}>
+                <Animated.View
+                  style={[
+                    styles.shimmer,
+                    {
+                      transform: [{ translateX: shimmerTranslateX }],
+                    },
+                  ]}
+                />
+              </View>
+              {/* Skeleton for username */}
+              <View style={[styles.skeletonText, { width: 100, height: 16 }]}>
+                <Animated.View
+                  style={[
+                    styles.shimmer,
+                    {
+                      transform: [{ translateX: shimmerTranslateX }],
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+        {/* Skeleton for search bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <View style={[styles.skeletonSearch, { flex: 1, height: 45 }]}>
+              <Animated.View
+                style={[
+                  styles.shimmer,
+                  {
+                    transform: [{ translateX: shimmerTranslateX }],
+                  },
+                ]}
+              />
+            </View>
+            <View style={[styles.filterButton, styles.skeletonFilterButton]}>
+              <Animated.View
+                style={[
+                  styles.shimmer,
+                  {
+                    transform: [{ translateX: shimmerTranslateX }],
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
         <View style={styles.userInfo}>
-          <Image
-            style={styles.avatar}
-            source={{ uri: profile?.image  }}
-          />
+          <Image style={styles.avatar} source={{ uri: profile?.image }} />
           <View style={styles.userText}>
             <Text style={styles.greeting}>Hello,</Text>
-            <Text style={styles.userName}>{profile?.user_name}</Text>
+            <Text style={styles.userName}>
+              {profile?.contact_name ? profile.contact_name : profile.customer_group}
+            </Text>
           </View>
         </View>
-        {/* <TouchableOpacity style={styles.notificationIcon} onPress={onNotificationPress}>
-          <Feather name="bell" size={24} color="white" />
-        </TouchableOpacity> */}
       </View>
 
       <View style={styles.searchContainer}>
@@ -54,16 +134,11 @@ const Header = ({
             onChangeText={onSearchChange}
             placeholderTextColor="#888"
           />
-          {searchText && 
+          {searchText ? (
             <TouchableOpacity onPress={onClearSearch}>
               <MaterialIcons name="clear" size={24} color="#888" />
             </TouchableOpacity>
-          // ) : (
-          //   <TouchableOpacity>
-          //     <Feather name="mic" size={20} color="#888" style={styles.micIcon} />
-          //   </TouchableOpacity>
-          // )
-          }
+          ) : null}
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
           <Feather name="sliders" size={20} color="white" />
@@ -107,9 +182,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  notificationIcon: {
-    padding: 5,
-  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,9 +204,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.black,
   },
-  micIcon: {
-    marginLeft: 10,
-  },
   filterButton: {
     backgroundColor: '#333',
     width: 40,
@@ -143,6 +212,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
+  },
+  // Skeleton styles
+  skeletonAvatar: {
+    backgroundColor: '#e0e0e0',
+    overflow: 'hidden',
+  },
+  skeletonText: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  skeletonSearch: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  skeletonFilterButton: {
+    backgroundColor: '#e0e0e0',
+  },
+  shimmer: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 100,
+    height: '100%',
   },
 });
 

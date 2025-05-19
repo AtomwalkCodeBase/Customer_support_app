@@ -125,10 +125,10 @@ export async function getTaskCategory() {
   return authAxios(url)
 }
 
-export async function getCustomerList() { 
-  const url = await getCustomerListURL();
-  return authAxios(url)
-}
+// export async function getCustomerList() { 
+//   const url = await getCustomerListURL();
+//   return authAxios(url)
+// }
 
 export async function getTasksList(task_type, customer_id) {
   const url = await userTaskListURL();
@@ -147,6 +147,11 @@ export async function addCustomerTicket(request_data) {
   const url = await addCustomerTicketURL();
   console.log('Data to be sent:', request_data);
   return authAxiosFilePost(url, request_data)
+}
+
+export async function getCustomerDetailList() {
+  const url = await getCustomerDetailListURL();
+  return authAxios(url);
 }
 
 
