@@ -65,7 +65,7 @@ useEffect(() => {
     try {
       setisLoading(true);
       const customerId = await AsyncStorage.getItem('Customer_id');
-      const res = await getCustomerDetailList();
+      const res = await getCustomerDetailList(customerId);
       const customer = res.data.find(
         (item) => item.id?.toString() === customerId?.toString()
       );

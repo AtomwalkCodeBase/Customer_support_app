@@ -149,9 +149,13 @@ export async function addCustomerTicket(request_data) {
   return authAxiosFilePost(url, request_data)
 }
 
-export async function getCustomerDetailList() {
+export async function getCustomerDetailList(customerId) {
+  let data={}
+  if(customerId){
+    data['customer_id']=customerId;
+  }
   const url = await getCustomerDetailListURL();
-  return authAxios(url);
+  return authAxios(url,data);
 }
 
 
