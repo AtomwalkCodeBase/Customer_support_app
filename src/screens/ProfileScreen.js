@@ -14,7 +14,7 @@ const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
   const [userPin, setUserPin] = useState(null);
   const [profileImg, setProfileImg] = useState({});
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState([]);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isBiometricModalVisible, setIsBiometricModalVisible] = useState(false); // New state for biometric modal
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -30,8 +30,9 @@ const ProfileScreen = () => {
       setLoading(true);
       const customerId = await AsyncStorage.getItem('Customer_id');
       const res = await getCustomerDetailList(customerId);
-      const customer = res.data?.find(item => item.id?.toString() === customerId?.toString());
-      setProfile(customer || {});
+      // console.log("data of customer", res.data)
+      // const customer = res.data?.find(item => item.id?.toString() === customerId?.toString());
+      setProfile(Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : {});
     } catch (error) {
       console.log('Failed to fetch Customer Details:', error.message);
       setError({ visible: true, message: 'Failed to load Customer Details' });

@@ -13,7 +13,8 @@ import {
   SafeAreaView,
   Image,
   ScrollView,
-  Keyboard
+  Keyboard,
+  Text
 } from "react-native";
 import { MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons";
 import Logos from "../../assets/images/Atom_walk_logo.jpg";
@@ -55,6 +56,8 @@ const LoginScreen = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [keyboardStatus, setKeyboardStatus] = useState(false);
   const isLoginDisabled = !mobileNumber || !pin;
+  const [bioStatus, setBioStatus] = useState(false);
+    const [profileName, setProfileName] = useState('');
 
 useEffect(() => {
   const fetchUserData = async () => {
@@ -73,6 +76,33 @@ useEffect(() => {
     }
   };
   fetchUserData();
+}, []);
+
+      useEffect(() => {
+  const loadSavedUsername = async () => {
+    try {
+
+      const storedName = await AsyncStorage.getItem('profilename');
+      if (storedName) {
+        setProfileName(storedName);
+        console.log("storedName",storedName)
+      } else {
+        const profileData = await AsyncStorage.getItem('profile');
+        if (profileData) {
+          const parsedProfile = JSON.parse(profileData);
+          setProfileName(parsedProfile?.name || 'Employee');
+        }
+      }
+
+      // Check fingerprint status
+      const fingerprintStatus = await AsyncStorage.getItem('useFingerprint');
+      setBioStatus(fingerprintStatus === 'true');
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  };
+
+  loadSavedUsername();
 }, []);
 
     useEffect(() => {
@@ -158,6 +188,7 @@ useEffect(() => {
   
   setCompanyError('');
   };
+  
 
   // const getDropdownValue = () => {
   // if (!selectedCompany) return null;
@@ -194,6 +225,12 @@ useEffect(() => {
     });
   };
 
+    const handlePressForget = () => {
+    router.push({
+      pathname: "ForgetPin",
+    });
+  };
+
   const handlePress = async () => {
     if (!validateInput()) {
       return;
@@ -223,7 +260,8 @@ useEffect(() => {
 
       const payload = {
         mobile_number: mobileNumber,
-        pin: parseInt(pin),
+        // pin: parseInt(pin),
+        pin: pin,
       };
       const response = await customerLogin(payload);
       if (response.status === 200) {
@@ -280,12 +318,12 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-              {/* {profileName && (
+              {profileName && (
                 <WelcomeContainer>
                   <GreetingText>Welcome back,</GreetingText>
                   <UserNameText>{profileName}</UserNameText>
                 </WelcomeContainer>
-              )} */}
+              )}
             </View>
           </LinearGradient>
         </Header>
@@ -373,7 +411,14 @@ useEffect(() => {
                 </InputContainer>
               </Card>
 
-              {userPin && (
+              <TouchableOpacity
+                onPress={handlePressForget}
+                style={styles.forgetPinButton}
+              >
+                <Text style={styles.forgetPinText}>Forgot PIN?</Text>
+              </TouchableOpacity>
+
+              {(userPin || bioStatus) && (
                 <AlternativeLogin onPress={handlePressPassword}>
                   <FingerprintIcon>
                     <Entypo
@@ -414,7 +459,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: scaleWidth(30),
   },
   headerTop: {
-    paddingVertical: scaleHeight(10),
+    // paddingVertical: scaleHeight(10),
   },
   companySection: {
     justifyContent: "center",
@@ -457,7 +502,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: scaleHeight(80), // Add padding to prevent content from being hidden behind footer
+    // paddingBottom: scaleHeight(70), // Add padding to prevent content from being hidden behind footer
   },
   hiddenFooter: {
     display: "none",
@@ -470,6 +515,18 @@ const styles = StyleSheet.create({
     borderTopColor: "#eee",
     backgroundColor: "#fff",
     width: "100%",
+  },
+    forgetPinButton: {
+    marginTop: scaleHeight(20),
+    alignSelf: "center",
+    // paddingVertical: scaleHeight(10),
+    // paddingHorizontal: scaleWidth(20),
+  },
+  forgetPinText: {
+    color: "#6B8CBE",
+    fontSize: scaleWidth(16),
+    fontWeight: "500",
+    textDecorationLine: "underline",
   },
 });
 
@@ -489,7 +546,6 @@ const Header = styled.View`
 
 const ContentContainer = styled.View`
   flex: 1;
-  margin-top: ${scaleHeight(-40)}px;
 `;
 
 const Content = styled.View`

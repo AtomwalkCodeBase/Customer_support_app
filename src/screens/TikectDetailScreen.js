@@ -19,11 +19,7 @@ const InfoItem = ({ icon, label, value, onPress, isLink }) => {
   if (!value) return null;
   
   return (
-    <TouchableOpacity 
-      style={styles.infoItem}
-      disabled={!onPress}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={styles.infoItem} disabled={!onPress} onPress={onPress} >
       <View style={styles.infoIcon}>
         {icon}
       </View>

@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Modal,
-} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -99,18 +90,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         });
       }
 
-      // Debug: Log FormData
-      // console.log('FormData contents:');
-      // for (let [key, value] of formData._parts) {
-      //   console.log(`${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`);
-      // }
-
       const res = await addCustomerTicket(formData);
-      // console.log('API Full Response:', {
-      //   status: res.status,
-      //   data: res.data,
-      //   headers: res.headers,
-      // });
 
       if (res.status === 200) {
         // Handle empty or incomplete response
@@ -147,6 +127,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
     setModalState((prev) => ({ ...prev, successVisible: false }));
     onClose();
   };
+  
 
   // Pick document
   const pickDocument = async () => {

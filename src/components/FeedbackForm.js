@@ -1,19 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  Animated,
-  Easing,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  ScrollView
-} from 'react-native';
+import { StyleSheet, Text, View, Modal, TouchableOpacity, TextInput, Animated, Easing, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import FileUploadField from './FilePicker';
@@ -173,7 +159,7 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
 
       // Call the addCustomerTicket API
        const res = await addCustomerTicket(formData);
-	  console.log("FeedbackForm", res.data);
+	  // console.log("FeedbackForm", res.data);
 
       // Notify parent component of successful submission
       onSubmit({

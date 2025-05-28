@@ -21,7 +21,6 @@ import Logos from "../../assets/images/Atom_walk_logo.jpg";
 import Icon from 'react-native-vector-icons/Ionicons'; 
 import PinPassword from '../../src/screens/PinPassword';
 import { AppContext } from '../../context/AppContext';
-// import { ErrorModal, Loader } from '../../src/components/Modals';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ErrorModal, Loader } from '../../src/components/Modals';
@@ -49,7 +48,7 @@ const AuthScreen = () => {
     const shakeAnim = new Animated.Value(0);
     const maxAttempts = 5;
 
-    const openPopup = () => {setModalVisible(true)};
+    // const openPopup = () => {setModalVisible(true)};
 
       const triggerShake = () => {
         Animated.sequence([

@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Modal,
-  Animated,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Modal, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginURL } from '../../src/services/ConstantServices';
 import { publicAxiosRequest } from '../../src/services/HttpMethod';

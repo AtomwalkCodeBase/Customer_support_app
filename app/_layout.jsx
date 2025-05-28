@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack.Screen name="PinScreen/index" options={{headerShown:false}}/> 
       <Stack.Screen name="ResetPassword/index" options={{headerShown:false}}/>
       <Stack.Screen name="TicketDetailScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="ForgetPin/index" options={{headerShown:false}}/>
     </Stack>
     </TaskProvider>
     </AppProvider>

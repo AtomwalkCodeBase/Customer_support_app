@@ -24,16 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { TaskContext } from '../context/TaskContext';
 
 export default function TicketListScreen() {
-  const {
-    categories,
-    tickets,
-    setTickets,
-    loading,
-    error,
-    fetchTaskCategories,
-    fetchTasks,
-    clearError,
-  } = useContext(TaskContext);
+  const { categories, tickets, setTickets, loading, error, fetchTaskCategories, fetchTasks, clearError } = useContext(TaskContext);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -70,6 +61,10 @@ useEffect(() => {
         (item) => item.id?.toString() === customerId?.toString()
       );
       setProfile(customer || {});
+      // console.log("data", customer.name );
+      await AsyncStorage.setItem('profilename', customer.name);
+      
+
     } catch (error) {
       console.log('Failed to fetch Customer Details:', error.message);
       setisError({ visible: true, message: 'Failed to load Customer Details' });
@@ -84,7 +79,7 @@ useEffect(() => {
 
   // Handle category selection from dropdown
   const handleCategorySelect = (category) => {
-    console.log('Selected category:', category);
+    // console.log('Selected category:', category);
     setSelectedCategory(category);
     setShowDropdown(false);
   };

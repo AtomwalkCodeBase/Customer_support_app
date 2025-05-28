@@ -21,6 +21,14 @@ const DropdownPicker = ({
 }) => {
   const [showPicker, setShowPicker] = React.useState(false);
 
+  // Handle different value types (string or object)
+  const displayValue = React.useMemo(() => {
+    if (typeof value === 'string') {
+      return value; // Directly use the string value for display
+    }
+    return value?.name || placeholder;
+  }, [value, placeholder]);
+
   // If disabled, show the value's name or placeholder
   if (disabled) {
     return (
@@ -28,7 +36,7 @@ const DropdownPicker = ({
         <Text style={styles.label}>{label}</Text>
         <View style={[styles.dropdownButton, styles.disabledDropdown]}>
           <Text style={styles.dropdownButtonText}>
-            {value?.name || placeholder} {/* Use value?.name for disabled state */}
+            {displayValue}
           </Text>
         </View>
       </View>
@@ -50,7 +58,7 @@ const DropdownPicker = ({
               !value?.id && styles.placeholderText,
             ]}
           >
-            {value?.name || placeholder}
+            {displayValue}
           </Text>
           {!disabled && (
             <MaterialIcons name="arrow-drop-down" size={24} color="#888" />
