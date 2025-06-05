@@ -44,28 +44,68 @@ const InfoItem = ({ icon, label, value, onPress, isLink }) => {
 
 // Status Badge component
 const StatusBadge = ({ status }) => {
+  // const getStatusColor = (status) => {
+  //   switch(status) {
+  //     case 'Completed':
+  //       return '#4CD964'; // Green
+  //     case 'Resolved':
+  //       return '#4CD964'; // Green
+  //     case 'Planned':
+  //       return '#5AC8FA'; // Blue
+  //     case 'In Progress':
+  //       return '#5856D6'; // Purple
+  //     case 'Rejected':
+  //       return '#FF6B6B'; // Red
+  //     case 'Pending':
+  //       return '#FFC107'; // Yellow/Amber
+  //     case 'On Hold':
+  //       return '#FF9500'; // Orange
+  //     case 'Wait for Response':
+  //       return '#34AADC'; // Light Blue
+  //     case 'Not Planned':
+  //       return '#888888'; // Gray
+  //     default:
+  //       return '#888888'; // Default Gray
+  //   }
+  // };
   const getStatusColor = (status) => {
     switch(status) {
+      // Success/Completion states - Green shades
       case 'Completed':
-        return '#4CD964'; // Green
-      case 'Resolved':
-        return '#4CD964'; // Green
+        return '#4CD964'; // Bright Green - clearly successful
+      
+      // Active/Working states - Blue shades
       case 'Planned':
-        return '#5AC8FA'; // Blue
+        return '#007AFF'; // Blue - organized and ready
       case 'In Progress':
-        return '#5856D6'; // Purple
-      case 'Rejected':
-        return '#FF6B6B'; // Red
-      case 'Pending':
-        return '#FFC107'; // Yellow/Amber
+        return '#5856D6'; // Purple-Blue - actively being worked on
+      
+      // Paused/Waiting states - Orange/Amber shades
       case 'On Hold':
-        return '#FF9500'; // Orange
-      case 'Wait for Response':
-        return '#34AADC'; // Light Blue
+        return '#FF9500'; // Orange - temporarily paused
+      case 'Waiting for Response':
+        return '#FFCC00'; // Amber - waiting for external input
+      case 'Reassigned to User':
+        return '#FF9F0A'; // Orange-Yellow - action transferred
+      
+      // Negative/Closed states - Red shades
+      case 'Closed- Not Successful':
+        return '#FF3B30'; // Red - clearly unsuccessful
+      case 'Deleted':
+        return '#8E8E93'; // Gray - removed/archived
       case 'Not Planned':
-        return '#888888'; // Gray
+        return '#666666'; // Dark Gray - no action planned
+      
+      // Legacy statuses (if still needed)
+      case 'Resolved':
+        return '#4CD964'; // Green - same as completed
+      case 'Rejected':
+        return '#FF6B6B'; // Red - your theme color
+      case 'Pending':
+        return '#FFC107'; // Yellow - general pending state
+      
       default:
-        return '#888888'; // Default Gray
+        return '#888888'; // Default Gray for unknown statuses
     }
   };
 

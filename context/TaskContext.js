@@ -16,6 +16,7 @@ export const TaskProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await getTaskCategory();
+      // console.log("category", res.data)
       setCategories(res.data);
     } catch (error) {
       console.log('Failed to fetch categories:', error);
@@ -33,6 +34,7 @@ export const TaskProvider = ({ children }) => {
       setLoading(true);
       const customerId = await getCustomerId();
       const res = await getTasksList('ALL', customerId);
+      // console.log("Task data", res.data)
       setTickets(res.data);
     } catch (error) {
       console.log('Failed to fetch tasks:', error.message);

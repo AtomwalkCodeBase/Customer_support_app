@@ -1,36 +1,21 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components/native";
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  StyleSheet,
-  Platform,
-  StatusBar,
-  Dimensions,
-  SafeAreaView,
-  Image,
-  ScrollView,
-  Keyboard,
-  Text
-} from "react-native";
-import { MaterialIcons, FontAwesome, Entypo } from "@expo/vector-icons";
-import Logos from "../../assets/images/Atom_walk_logo.jpg";
-import { useRouter } from "expo-router";
-import { loginURL, userLoginURL } from "../../src/services/ConstantServices";
-import axios from "axios"; // If you prefer axios for API calls
-import { getCompanyInfo, getDBListInfo } from "../../src/services/authServices";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  authAxiosPost,
-  publicAxiosRequest,
-} from "../../src/services/HttpMethod";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components/native';
+import { View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Keyboard, StatusBar, SafeAreaView, 
+  KeyboardAvoidingView, Platform, ScrollView, Dimensions, Image, Text } from 'react-native';
+import { FontAwesome, Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Logos from '../../assets/images/Atom_walk_logo.jpg';
+import { useRouter } from 'expo-router';
 import { customerLogin } from "../../src/services/productServices";
+import { getCompanyInfo, getDBListInfo } from '../../src/services/authServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { publicAxiosRequest } from '../../src/services/HttpMethod';
+import DropdownPicker from '../../src/components/DropdownPicker';
 import CompanyDropdown from "../../src/components/CompanyDropdown";
 import { colors } from "../../src/Styles/appStyle";
-import { LinearGradient } from "expo-linear-gradient";
+import Constants from 'expo-constants';
+import { Loader } from '../../src/components/Modals';
+
 
 
 const { width, height } = Dimensions.get('window');
@@ -40,47 +25,35 @@ const scaleWidth = (size) => (width / 375) * size;
 const scaleHeight = (size) => (height / 812) * size;
 
 
-
 const LoginScreen = () => {
   const router = useRouter();
-  const [dbName, setDBName] = useState('');
-  const [previousDbName, setPreviousDbName] = useState('');
   const [mobileNumber, setMobileNumber] = useState("");
-  const [pin, setPin] = useState("");
+  const [dbName, setDBName] = useState('');
+  const [username, setUsername] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [pin, setPin] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const [userPin, setUserPin] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [companyError, setCompanyError] = useState("");
-  const [dbList, setDbList] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companyError, setCompanyError] = useState('');
   const [keyboardStatus, setKeyboardStatus] = useState(false);
+  const [dbList, setDbList] = useState([]);
   const isLoginDisabled = !mobileNumber || !pin;
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [previousDbName, setPreviousDbName] = useState('');
   const [bioStatus, setBioStatus] = useState(false);
-    const [profileName, setProfileName] = useState('');
 
-useEffect(() => {
-  const fetchUserData = async () => {
-    try {
-      // Fetch stored mobile number
-      const storedMobileNumber = await AsyncStorage.getItem("mobileNumber");
-      if (storedMobileNumber) {
-        setMobileNumber(storedMobileNumber); // Prefill the mobile number field
-      }
-
-      // Fetch stored PIN
-      const storedPin = await AsyncStorage.getItem("userPin");
-      setUserPin(storedPin);
-    } catch (error) {
-      console.error("Error fetching data from AsyncStorage:", error);
-    }
-  };
-  fetchUserData();
-}, []);
+  const appVersion = Constants.expoConfig?.version || '0.0.1';
+  
 
       useEffect(() => {
   const loadSavedUsername = async () => {
     try {
+      const storedMobileNumber = await AsyncStorage.getItem("mobileNumber");
+      if (storedMobileNumber) {
+        setMobileNumber(storedMobileNumber); // Prefill the mobile number field
+      }
 
       const storedName = await AsyncStorage.getItem('profilename');
       if (storedName) {
@@ -95,7 +68,7 @@ useEffect(() => {
       }
 
       // Check fingerprint status
-      const fingerprintStatus = await AsyncStorage.getItem('useFingerprint');
+      const fingerprintStatus = await AsyncStorage.getItem('userBiometric');
       setBioStatus(fingerprintStatus === 'true');
     } catch (error) {
       console.error('Error loading saved data:', error);
@@ -105,7 +78,24 @@ useEffect(() => {
   loadSavedUsername();
 }, []);
 
-    useEffect(() => {
+
+  useEffect(() => {
+    const fetchUserPin = async () => {
+      try {
+        const storedPin = await AsyncStorage.getItem('userPin');
+        setUserPin(storedPin);
+      } catch (error) {
+        console.error('Error fetching userPin from AsyncStorage:', error);
+      }
+    };
+    fetchUserPin();
+  }, []);
+
+  useEffect(() => {
+    fetchDbName();
+  }, []);
+
+  useEffect(() => {
   const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => setKeyboardStatus(true)
@@ -121,24 +111,19 @@ useEffect(() => {
   };
 }, []);
 
-  useEffect(() => {
-    fetchDbName();
-  }, []);
+  // useEffect(() => {
+  //   if (selectedCompany && dbList.length > 0) {
+  //     const company = dbList.find(c => c.ref_cust_name === selectedCompany.ref_cust_name);
+  //     if (company) {
+  //       const dbName = company.name.replace('SD_', '');
+  //       AsyncStorage.setItem('dbName', dbName);
+  //     }
+  //   }
+  // }, [selectedCompany, dbList]);
 
-  useEffect(() => {
-    if (selectedCompany && dbList.length > 0) {
-      const company = dbList.find(
-        (c) => c.ref_cust_name === selectedCompany.ref_cust_name
-      );
-      if (company) {
-        const dbName = company.name.replace("SD_", "");
-        AsyncStorage.setItem("dbName", dbName);
-      }
-    }
-  }, [selectedCompany, dbList]);
-
-  const fetchDbName = async () => {
-     try {
+ const fetchDbName = async () => {
+  setLoading(true); // Add loading state at start
+  try {
     const DBData = await getDBListInfo();
     setDbList(DBData.data || []);
     
@@ -171,11 +156,13 @@ useEffect(() => {
       ]);
     }
   } catch (error) {
-      console.error("Error fetching DB List:", error);
-    }
-  };
+    console.error('DB List loading error:', error);
+  } finally {
+    setLoading(false); // Ensure loading is set to false when done
+  }
+};
 
-  const handleCompanyChange = async (item) => {
+const handleCompanyChange = async (item) => {
   if (!item) return;
 
   setSelectedCompany(item);
@@ -187,65 +174,88 @@ useEffect(() => {
   }
   
   setCompanyError('');
-  };
-  
+};
 
-  // const getDropdownValue = () => {
-  // if (!selectedCompany) return null;
-  // return {
-  //   label: selectedCompany.ref_cust_name,
-  //   value: selectedCompany.ref_cust_name
-  // };
-  // };
+  const getDropdownValue = () => {
+    if (!selectedCompany) return null;
+    return {
+      label: selectedCompany.ref_cust_name,
+      value: selectedCompany.ref_cust_name
+    };
+  };
 
   const validateInput = () => {
     if (!selectedCompany) {
-      setCompanyError("Please select your company");
+      setCompanyError('Please select your company');
+      setLoading(false);
       return false;
     }
     if (!mobileNumber) {
-      setErrorMessage("Mobile number is required");
+      setErrorMessage('Mobile number or Employee ID is required');
+      setLoading(false);
       return false;
     }
     if (!pin) {
-      setErrorMessage("PIN is required");
+      setErrorMessage('PIN is required');
+      setLoading(false);
       return false;
     }
     if (pin.length < 4) {
-      setErrorMessage("PIN must be at least 4 characters long");
+      setErrorMessage('PIN must be at least 4 characters long');
+      setLoading(false);
       return false;
     }
-    setErrorMessage("");
+    setErrorMessage('');
     return true;
   };
 
-  const handlePressPassword = () => {
-    router.push({
-      pathname: "PinScreen",
-    });
-  };
+  const handlePressPassword = async () => {
+  try {
+    // Mark that fingerprint is supported
+    // await AsyncStorage.setItem('useFingerprint', 'true');
 
-    const handlePressForget = () => {
-    router.push({
-      pathname: "ForgetPin",
-    });
-  };
-
-  const handlePress = async () => {
-    if (!validateInput()) {
-      return;
-    }
-
+    // Retrieve the previously used database name
     const prevDbName = await AsyncStorage.getItem('previousDbName');
 
-        // If available, set it as the current dbName
+    // If available, set it as the current dbName
     if (prevDbName) {
       await AsyncStorage.setItem('dbName', prevDbName);
     }
 
+    // Navigate to the PIN screen
+    router.push({ pathname: 'PinScreen' });
+  } catch (error) {
+    console.error('Error handling PIN/fingerprint login:', error);
+  }
+};
+
+const handlePressForget = () => {
+  router.push({
+      pathname: 'ForgetPin',
+    });
+};
+
+
+
+  // Add this to verify AsyncStorage updates
+useEffect(() => {
+  const logCurrentDbName = async () => {
+    // console.log('Current AsyncStorage dbName:', await AsyncStorage.getItem('dbName'));
+  };
+  logCurrentDbName();
+}, [selectedCompany]);
+
+  const handlePress = async () => {
+    
+  
     setLoading(true);
 
+    if (!validateInput()) {
+      return;
+    }
+  
     try {
+
       // First, update dbName if a new company was selected
     if (selectedCompany) {
       const selected = dbList.find(c => c.ref_cust_name === selectedCompany.value);
@@ -257,37 +267,86 @@ useEffect(() => {
         ]);
       }
     }
-
+      // Determine if the input is a mobile number (10 digits) or employee ID
+      // const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
+      
       const payload = {
         mobile_number: mobileNumber,
         // pin: parseInt(pin),
         pin: pin,
       };
+          
+  
       const response = await customerLogin(payload);
+      console.log("Payload--------",payload)
+
+
       if (response.status === 200) {
-        AsyncStorage.setItem("userPin", pin);
-        AsyncStorage.setItem("mobileNumber", mobileNumber);
+        // const { token, emp_id, e_id } = response.data;
+        
+        // Determine if the input is a mobile number (10 digits) or employee ID
+        // const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
+        
+        // if (isMobileNumber) {
+        //   await AsyncStorage.setItem('mobileNumber', mobileNumberOrEmpId);
+        // } else {
+        //   await AsyncStorage.setItem('empId', mobileNumberOrEmpId);
+        // }
+        // await AsyncStorage.setItem('mobileNumber', mobileNumberOrEmpId);
+        // await AsyncStorage.setItem('userToken', token);
+        // await AsyncStorage.setItem('empId', emp_id);
+        // await AsyncStorage.setItem('empNoId', String(e_id));
+        // await AsyncStorage.setItem('userPin', pin);
+        await AsyncStorage.setItem("userPin", pin);
+        await AsyncStorage.setItem("mobileNumber", mobileNumber);
         const userToken = response.data?.token;
         const Customer_id = response.data?.customer_id;
         await AsyncStorage.setItem("Customer_id", Customer_id.toString());
         await AsyncStorage.setItem("userToken", userToken);
-        router.push("/home");
+  
+        try {
+          const companyInfoResponse = await getCompanyInfo();
+          const companyInfo = companyInfoResponse.data;
+          await AsyncStorage.setItem('companyInfo', JSON.stringify(companyInfo));
+        } catch (error) {
+          console.error('Error fetching company info:', error.message);
+        }
+        router.push('/home');
       } else {
-        setErrorMessage("Invalid User id or Password");
+        setErrorMessage('Invalid Mobile Number or Pin');
       }
     } catch (error) {
-      console.log("API call error:", error.response?.data || error.message);
+      console.error('API call error:', error.response?.data || error.message);
       if (error.response) {
-        setErrorMessage(
-          `Error: ${error.response.data.error || "Invalid credentials"}`
-        );
-      } else if (error.request) {
-        setErrorMessage(
-          "No response from the server. Please check your connection."
-        );
+      if (error.response.data?.error) {
+        const errorMessage = error.response.data.error;
+        
+        // Handle "Wrong Attempt [X]" case
+        const wrongAttemptMatch = errorMessage.match(/Wrong Attempt \[(\d+)\]/);
+        if (wrongAttemptMatch) {
+          const attemptCount = parseInt(wrongAttemptMatch[1]);
+          
+          if (attemptCount >= 6) {
+            setErrorMessage('Your account has been blocked due to too many failed attempts. Please contact support.');
+            // Disable login button or take other appropriate action
+            return;
+          } else {
+            setErrorMessage(`Incorrect PIN. You have ${6 - attemptCount} attempts remaining before your account gets blocked.`);
+            return;
+          }
+        }
+        
+        // Handle other error messages with brackets
+        const generalMatch = errorMessage.match(/\[(.*?)\]/);
+        setErrorMessage(generalMatch ? generalMatch[1] : errorMessage);
       } else {
-        setErrorMessage("An error occurred. Please try again.");
+        setErrorMessage('Invalid credentials. Please try again.');
       }
+    } else if (error.request) {
+      setErrorMessage('No response from the server. Please check your connection.');
+    } else {
+      setErrorMessage('An error occurred. Please try again.');
+    }
     } finally {
       setLoading(false);
     }
@@ -296,238 +355,228 @@ useEffect(() => {
   return (
     <SafeAreaContainer>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      <Container>
-        <Header style={styles.headerContainer}>
-          <LinearGradient
-            colors={[colors.primary, "#feb3b3"]}
-            start={[0, 0]}
-            end={[1, 1]}
-            style={styles.headerGradient}
-          >
-            <View style={styles.headerTop}>
-              <View style={styles.logoContainer}>
-                {Logos ? (
-                  <Image source={Logos} style={styles.logo} />
-                ) : (
-                  <View style={styles.companyPlaceholder}>
-                    <MaterialIcons
-                      name="business"
-                      size={scaleWidth(40)}
-                      color="#fff"
-                    />
-                  </View>
-                )}
-              </View>
-              {profileName && (
-                <WelcomeContainer>
-                  <GreetingText>Welcome back,</GreetingText>
-                  <UserNameText>{profileName}</UserNameText>
-                </WelcomeContainer>
-              )}
-            </View>
-          </LinearGradient>
-        </Header>
-        <MainContent keyboardStatus={keyboardStatus}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Content>
-              <Card>
-                <Title>Login</Title>
+          <Container>
+            <Header style={styles.headerContainer}>
+              <LinearGradient 
+                colors={[colors.primary, "#feb3b3"]} 
+                start={[0, 0]} 
+                end={[1, 1]}
+                style={styles.headerGradient}
+              >
+                <View style={styles.headerTop}>
+                  
+                  
+                  <View style={styles.logoContainer}>
+                                      {Logos ? (
+                                      <Image source={Logos} style={styles.logo} />
+                                      ) : (
+                                      <View style={styles.companyPlaceholder}>
+                                          <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
+                                      </View>
+                                      )}
+                                  </View>
+                  {profileName && (
+                    <WelcomeContainer>
+                      <GreetingText>Welcome back,</GreetingText>
+                      <UserNameText>{profileName}</UserNameText>
+                    </WelcomeContainer>
+                  )}
+                </View>
+              </LinearGradient>
+            </Header>
+            <MainContent keyboardStatus={keyboardStatus}>
+            <ScrollView 
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+                <Content>
+                  <Card>
+                    <Title>Login</Title>
+                    
+                    <InputContainer>
+        {dbList.length > 0 && (
+          <CompanyDropdown
+            label="Company"
+            data={dbList.map(company => ({
+              label: company.ref_cust_name,
+              value: company.ref_cust_name
+            }))}
+            value={selectedCompany}
+            setValue={handleCompanyChange}
+            error={companyError}
+          />
+        )}
+        
+                      <InputLabel>Enter your Mobile number or Emp ID</InputLabel>
+                      <InputWrapper>
+          <MaterialIcons name="person" size={20} color="#6c757d" />
+                        <Input
+                          placeholder="Mobile number"
+                          value={mobileNumber}
+                          onChangeText={setMobileNumber} // This removes all spaces
+                          keyboardType="numeric"
+                          placeholderTextColor="#6c757d"
+                          maxLength={10}
+                        />
+                      </InputWrapper>
+                      <InputLabel>Enter your PIN (min 4 digits)</InputLabel>
+                      <InputWrapper>
+          <MaterialIcons name="lock-outline" size={20} color="#6c757d" />
+                        <Input
+                        placeholder="Enter your PIN"
+                        value={pin}
+                        onChangeText={setPin}
+                        secureTextEntry={!isPasswordVisible}
+                        keyboardType="numeric"
+                        placeholderTextColor="#6c757d"
+                        maxLength={6} // Increased max length but validation still requires min 4
+                      />
+          <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+            <MaterialIcons
+              name={isPasswordVisible ? 'visibility' : 'visibility-off'}
+              size={20}
+              color="#6c757d"
+                          />
+          </TouchableOpacity>
+                      </InputWrapper>
+                      
+                      {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
+                      
+                      <LoginButton 
+                        onPress={handlePress}
+                        disabled={isLoginDisabled}
+                        style={{ backgroundColor: isLoginDisabled ? '#fff' : '#0062cc' }}
+                      >
+                        <LoginButtonText style={{ color: isLoginDisabled ? "#3333" : "#fff" }}>
+                          LOGIN
+                        </LoginButtonText>
+                      </LoginButton>
 
-                <InputContainer>
-                  {dbList.length > 0 && (
-                    <CompanyDropdown
-                      label="Company"
-                      data={dbList.map((company) => ({
-                        label: company.ref_cust_name,
-                        value: company.ref_cust_name,
-                      }))}
-                      value={selectedCompany}
-                      setValue={handleCompanyChange}
-                      error={companyError}
-                    />
+                    </InputContainer>
+                  </Card>
+
+                  {(userPin && bioStatus) && (
+                    <AlternativeLogin onPress={handlePressPassword}>
+                      <FingerprintIcon>
+                        <Entypo name="fingerprint" size={scaleWidth(24)} color="#fff" />
+                      </FingerprintIcon>
+                      <AlternativeLoginText>Login with PIN/Fingerprint</AlternativeLoginText>
+                    </AlternativeLogin>
                   )}
 
-                  <InputLabel>Enter your Mobile number</InputLabel>
-                  <InputWrapper>
-                    <MaterialIcons name="person" size={20} color="#6c757d" />
-                    <Input
-                      placeholder="Mobile number"
-                      value={mobileNumber}
-                      onChangeText={setMobileNumber}
-                      keyboardType="numeric" // Changed to default to allow both numbers and text
-                      placeholderTextColor="#6c757d"
-                      maxLength={10} // Increased max length for employee IDs
-                    />
-                  </InputWrapper>
-
-                  <InputLabel>Enter your PIN (min 4 digits)</InputLabel>
-                  <InputWrapper>
-                    <MaterialIcons
-                      name="lock-outline"
-                      size={20}
-                      color="#6c757d"
-                    />
-                    <Input
-                      placeholder="Enter your PIN"
-                      value={pin}
-                      onChangeText={setPin}
-                      secureTextEntry={!isPasswordVisible}
-                      keyboardType="numeric"
-                      placeholderTextColor="#6c757d"
-                      maxLength={10} 
-                    />
-                    <TouchableOpacity
-                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    >
-                      <MaterialIcons
-                        name={
-                          isPasswordVisible ? "visibility" : "visibility-off"
-                        }
-                        size={20}
-                        color="#6c757d"
-                      />
-                    </TouchableOpacity>
-                  </InputWrapper>
-
-                  {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
-
-                  <LoginButton
-                    onPress={handlePress}
-                    disabled={isLoginDisabled}
-                    style={{
-                      backgroundColor: isLoginDisabled ? "#fff" : "#0062cc",
-                    }}
+                  <TouchableOpacity 
+                    onPress={handlePressForget}
+                    style={styles.forgetPinButton}
                   >
-                    <LoginButtonText
-                      style={{ color: isLoginDisabled ? "#3333" : "#fff" }}
-                    >
-                      LOGIN
-                    </LoginButtonText>
-                  </LoginButton>
-                </InputContainer>
-              </Card>
+                    <Text style={styles.forgetPinText}>Forgot PIN?</Text>
+                  </TouchableOpacity>
+                </Content>
+                </ScrollView>
+                </MainContent>
 
-              <TouchableOpacity
-                onPress={handlePressForget}
-                style={styles.forgetPinButton}
-              >
-                <Text style={styles.forgetPinText}>Forgot PIN?</Text>
-              </TouchableOpacity>
-
-              {(userPin || bioStatus) && (
-                <AlternativeLogin onPress={handlePressPassword}>
-                  <FingerprintIcon>
-                    <Entypo
-                      name="fingerprint"
-                      size={scaleWidth(24)}
-                      color="#fff"
-                    />
-                  </FingerprintIcon>
-                  <AlternativeLoginText>
-                    Login with PIN/Fingerprint
-                  </AlternativeLoginText>
-                </AlternativeLogin>
-              )}
-            </Content>
-          </ScrollView>
-        </MainContent>
-        <Footer style={styles.fixedFooter}>
-          <FooterText>Version Code: 1.0.1</FooterText>
-        </Footer>
-      </Container>
-    </SafeAreaContainer>
+            <Footer style={styles.fixedFooter}>
+              <FooterText>Version Code: {appVersion}</FooterText>
+            </Footer>
+          </Container>
+        {/* </KeyboardAvoidingView> */}
+        {/* <Loader 
+        visible={loading} 
+        onTimeout={() => {
+                    setLoading(false); // Hide loader
+                    Alert.alert('Timeout', 'Not able to Login.');
+                  }}
+      /> */}
+      <Loader  visible={loading} />
+      </SafeAreaContainer>
   );
 };
+
 // Styled Components (remain the same as in your original code)
 const styles = StyleSheet.create({
   headerContainer: {
-    overflow: "visible",
+    overflow: 'visible',
     zIndex: 10,
   },
   headerGradient: {
-    paddingTop:
-      Platform.OS === "android"
-        ? StatusBar.currentHeight + scaleHeight(10)
-        : scaleHeight(10),
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + scaleHeight(10) : scaleHeight(10),
     paddingHorizontal: scaleWidth(20),
     paddingBottom: scaleHeight(20),
     borderBottomLeftRadius: scaleWidth(30),
     borderBottomRightRadius: scaleWidth(30),
   },
   headerTop: {
-    // paddingVertical: scaleHeight(10),
+    paddingVertical: scaleHeight(10),
   },
   companySection: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: scaleHeight(20),
   },
 
   logoContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 15,
     borderRadius: scaleWidth(10),
-    overflow: "hidden",
-  },
+    overflow: 'hidden'
+},
 
-  logo: {
+logo: {
     width: scaleWidth(150),
     height: scaleHeight(60),
     borderRadius: scaleWidth(10),
-    resizeMode: "contain",
-    backgroundColor: "#fff",
-  },
+    resizeMode: 'contain',
+    backgroundColor: '#fff',
+},
   companyPlaceholder: {
     width: scaleWidth(80),
     height: scaleWidth(80),
     borderRadius: scaleWidth(40),
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   contentWrapper: {
     flex: 1,
-    position: "relative", // Needed for absolute positioning of footer
+    position: 'relative', // Needed for absolute positioning of footer
   },
   fixedFooter: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
   },
   scrollContent: {
     flexGrow: 1,
-    // paddingBottom: scaleHeight(70), // Add padding to prevent content from being hidden behind footer
+    paddingBottom: scaleHeight(70), // Add padding to prevent content from being hidden behind footer
   },
   hiddenFooter: {
-    display: "none",
+    display: 'none',
   },
   visibleFooter: {
     padding: scaleHeight(15),
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    backgroundColor: "#fff",
-    width: "100%",
+    borderTopColor: '#eee',
+    backgroundColor: '#fff',
+    width: '100%',
   },
-    forgetPinButton: {
-    marginTop: scaleHeight(20),
-    alignSelf: "center",
-    // paddingVertical: scaleHeight(10),
-    // paddingHorizontal: scaleWidth(20),
-  },
-  forgetPinText: {
-    color: "#6B8CBE",
-    fontSize: scaleWidth(16),
-    fontWeight: "500",
-    textDecorationLine: "underline",
-  },
+
+  forgetPinButton: {
+  marginTop: scaleHeight(20),
+  alignSelf: 'center',
+  paddingVertical: scaleHeight(10),
+  paddingHorizontal: scaleWidth(20),
+},
+forgetPinText: {
+  color: '#6B8CBE',
+  fontSize: scaleWidth(16),
+  fontWeight: '500',
+  textDecorationLine: 'underline',
+},
+
 });
 
 const SafeAreaContainer = styled(SafeAreaView)`
@@ -546,6 +595,7 @@ const Header = styled.View`
 
 const ContentContainer = styled.View`
   flex: 1;
+  margin-top: ${scaleHeight(-40)}px;
 `;
 
 const Content = styled.View`
@@ -563,7 +613,7 @@ const Logo = styled.Image`
 const Card = styled.View`
   background-color: #fff;
   border-radius: ${scaleWidth(10)}px;
-  margin-top: ${scaleHeight(50)}px;
+  margin-top: ${scaleHeight(20)}px;
   padding: ${scaleWidth(20)}px;
   shadow-color: #000;
   shadow-offset: 0px 2px;
@@ -619,13 +669,14 @@ const ErrorText = styled.Text`
 `;
 
 const LoginButton = styled.TouchableOpacity`
-  background-color: ${(props) => (props.disabled ? "#fff" : "#0062cc")};
+  background-color: ${props => props.disabled ? '#fff' : '#0062cc'};
   border: 1px solid rgb(215, 222, 230);
   padding: ${scaleHeight(15)}px;
   border-radius: ${scaleWidth(5)}px;
   align-items: center;
   margin-top: ${scaleHeight(10)}px;
 `;
+
 
 const LoginButtonText = styled.Text`
   color: #fff;
@@ -675,7 +726,7 @@ const AlternativeLoginText = styled.Text`
 `;
 const MainContent = styled.View`
   flex: 1;
-  margin-bottom: ${(props) => (props.keyboardStatus ? 0 : scaleHeight(60))}px;
+  margin-bottom: ${props => props.keyboardStatus ? 0 : scaleHeight(50)}px;
 `;
 const Footer = styled.View`
   padding: ${scaleHeight(10)}px;
@@ -692,5 +743,6 @@ const FooterText = styled.Text`
   font-size: ${scaleWidth(14)}px;
   font-weight: 500;
 `;
+
 
 export default LoginScreen;

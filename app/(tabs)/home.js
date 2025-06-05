@@ -1,14 +1,13 @@
 import { View, Text } from 'react-native'
 import React from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import PinPopup from '../../src/screens/PinPopup';
+import FingerPopup from '../../src/screens/FingerPopup';
 
 const home = () => {
   return (
     <>
       <HomeScreen/>
-      <PinPopup></PinPopup>
+      <FingerPopup/>
     </>
   )
 }

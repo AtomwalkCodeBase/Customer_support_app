@@ -7,9 +7,10 @@ export async function getProfileInfo() {
     return authAxios(url)
 }
 
-export function getCompanyInfo() {
-    return authAxios(companyInfoURL)
-}
+export async function getCompanyInfo() {
+    const url = await companyInfoURL(); // Await the async function
+    return authAxios(url);
+  }
 
 export function getDBListInfo() {
     let data = {

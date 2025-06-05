@@ -20,6 +20,11 @@ export const userLoginURL = async () => {
    return `${endpoint}/customer_user_login/${db_name}/`;
 }
 
+export const companyInfoURL = async () => {
+  const db_name = await getDbName();
+  return `${endpoint}/company_info/${db_name}/`;
+};
+
 export const getTaskCategoryURL = async () => {
   const db_name = await getDbName();
    return `${endpoint}/get_task_category/${db_name}/`;
