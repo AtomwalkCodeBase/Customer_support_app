@@ -71,7 +71,7 @@ export async function setUserPinView(o_pin, n_pin) {
 
     // console.log("Sending request to API with data:", data);
     const response = await authAxiosPost(url, data);
-    console.log("API Response:", response);
+    // console.log("API Response:", response);
     return response;
   } catch (error) {
     console.error("Error in setUserPinView:", error.response ? error.response.data : error.message);

@@ -216,7 +216,7 @@ const AuthScreen = () => {
                             style={styles.forgotContainer}
                         // onPress={openPopup}
                         >
-                            <Icon name="log-out-outline" size={16} color="#4A6FA5" />
+                            <Icon name="log-out-outline" size={16} color={colors.primary} />
                             <Text style={styles.forgotText}>Logout</Text>
                         </TouchableOpacity>
                     </View>
@@ -297,7 +297,7 @@ const AuthScreen = () => {
                                 style={styles.backButton}
                                 onPress={() => setShowPinInput(false)}
                             >
-                                <Icon name="arrow-back-outline" size={16} color="#4A6FA5" style={styles.backIcon} />
+                                <Icon name="arrow-back-outline" size={16} color={colors.primary} style={styles.backIcon} />
                                 <Text style={styles.backButtonText}>Back to Login Options</Text>
                             </TouchableOpacity>
                         )}
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
     header: {
-        paddingTop: 100,
+        paddingTop: 50,
         paddingBottom: 30,
         paddingHorizontal: 20,
         borderBottomLeftRadius: 20,
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#B1C0D7',
+        backgroundColor: colors.primaryTransparent,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 15,
@@ -549,14 +549,14 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     forgotText: {
-        color: '#4A6FA5',
+        color: colors.primary,
         marginLeft: 5,
         fontWeight: '500',
     },
     fingerprintIconContainer: {
         marginVertical: 30,
         padding: 20,
-        backgroundColor: '#B1C0D7',
+        backgroundColor: colors.primaryTransparent,
         borderRadius: 60,
     },
     fingerprintHint: {
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     backButtonText: {
-        color: '#4A6FA5',
+        color: colors.primary,
         fontSize: 14,
         fontWeight: '500',
     },

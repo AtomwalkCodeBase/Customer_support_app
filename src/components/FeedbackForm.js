@@ -159,7 +159,7 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
 
       // Call the addCustomerTicket API
        const res = await addCustomerTicket(formData);
-	  // console.log("FeedbackForm", res.data);
+	  console.log("FeedbackForm", res.data);
 
       // Notify parent component of successful submission
       onSubmit({

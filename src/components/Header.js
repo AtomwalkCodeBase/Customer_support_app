@@ -8,7 +8,7 @@ import {
   Image,
   Animated,
 } from 'react-native';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { getProfileInfo } from '../services/authServices';
 
@@ -141,7 +141,8 @@ const Header = ({
           ) : null}
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
-          <Feather name="sliders" size={20} color="white" />
+          {/* <Feather name="sliders" size={20} color="white" /> */}
+          <AntDesign name="filter" size={24} color="white" />
         </TouchableOpacity>
       </View>
     </View>

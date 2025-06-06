@@ -39,9 +39,9 @@ export const TaskProvider = ({ children }) => {
     } catch (error) {
       console.log('Failed to fetch tasks:', error.message);
       setError({ visible: true, message: 'Failed to load tasks' });
-    }setTimeout(() => {
+    }finally{
        setLoading(false);
-    }, 1000);
+    };
   }, []);
 
 
@@ -57,7 +57,9 @@ export const TaskProvider = ({ children }) => {
         tickets,
         setTickets, // Allow components to update tickets (e.g., after saving)
         loading,
+        setLoading,
         error,
+        setError,
         fetchTaskCategories,
         fetchTasks,
         clearError,

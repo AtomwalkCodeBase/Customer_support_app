@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { TaskContext } from '../context/TaskContext';
 
 export default function TicketListScreen() {
-  const { categories, tickets, setTickets, loading, error, fetchTaskCategories, fetchTasks, clearError } = useContext(TaskContext);
+  const { categories, tickets, setTickets, loading, setLoading, error, setError, fetchTaskCategories, fetchTasks, clearError } = useContext(TaskContext);
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -36,6 +36,7 @@ export default function TicketListScreen() {
   const [isLoading, setisLoading] = useState(false);
   const [isError, setisError] = useState({ visible: false, message: '' });
   const [profile, setProfile] = useState({});
+  const [taskLoder,setTaskloder]=useState(true)
 
   const router = useRouter();
 
@@ -102,24 +103,30 @@ useEffect(() => {
   ];
 
 // Filter tickets based on search text and selected category
-  const filteredTickets = useMemo(() => {
-    return tickets.filter((ticket) => {
-      const matchesSearch =
-        !searchText ||
-        (ticket.task_ref_id &&
-          ticket.task_ref_id.toLowerCase().includes(searchText.toLowerCase())) ||
-        (ticket.remarks &&
-          ticket.remarks.toLowerCase().includes(searchText.toLowerCase()));
+const filteredTickets = useMemo(() => {
+  // If no filters are applied (no searchText and no selectedCategory), return all tickets
+  if (!searchText && !selectedCategory) {
+    return tickets;
+  }
 
-      const matchesCategory =
-        !selectedCategory ||
-        selectedCategory.id === 'all' ||
-        (ticket.task_category_name &&
-          ticket.task_category_name === selectedCategory.name);
+  // Apply filtering when either searchText or selectedCategory is present
+  return tickets.filter((ticket) => {
+    const matchesSearch =
+      !searchText ||
+      (ticket.task_ref_id &&
+        ticket.task_ref_id.toLowerCase().includes(searchText.toLowerCase())) ||
+      (ticket.remarks &&
+        ticket.remarks.toLowerCase().includes(searchText.toLowerCase()));
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [tickets, searchText, selectedCategory]);
+    const matchesCategory =
+      !selectedCategory ||
+      selectedCategory.id === 'all' ||
+      (ticket.task_category_name &&
+        ticket.task_category_name === selectedCategory.name);
+
+    return matchesSearch && matchesCategory;
+  });
+}, [tickets, searchText, selectedCategory]);
 
   // Handle ticket creation or update
   const handleSaveTicket = async (ticketData) => {
@@ -169,6 +176,14 @@ useEffect(() => {
       setRefreshing(false);
     }
   };
+
+  useEffect(()=>{
+ if(filteredTickets.length>0){
+  setTaskloder(false)
+ }
+  },[filteredTickets]) 
+    
+  
 
   return (
     <>
@@ -264,7 +279,7 @@ useEffect(() => {
         message={error.message}
         onClose={clearError}
       />
-      <Loader visible={loading} message={refreshing ? 'Refreshing tickets...' : 'Loading tickets...'} />
+      <Loader visible={taskLoder} message={refreshing ? 'Refreshing tickets...' : 'Loading tickets...'} />
     </>
   );
 }
@@ -292,7 +307,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 5,
     flexDirection: 'row',
   },
   addButtonText: {
