@@ -79,7 +79,7 @@ const AppProvider = ({ children }) => {
               await AsyncStorage.setItem('userPin', password);
                 }
 
-                router.replace({ pathname: 'home' });
+                router.replace('/home');
         } catch (err) {
             console.log('Login error:', err);
           }

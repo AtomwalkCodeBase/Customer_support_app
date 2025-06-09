@@ -123,7 +123,6 @@ const filteredTickets = useMemo(() => {
       selectedCategory.id === 'all' ||
       (ticket.task_category_name &&
         ticket.task_category_name === selectedCategory.name);
-
     return matchesSearch && matchesCategory;
   });
 }, [tickets, searchText, selectedCategory]);
@@ -178,7 +177,7 @@ const filteredTickets = useMemo(() => {
   };
 
   useEffect(()=>{
- if(filteredTickets.length>0){
+ if(filteredTickets){
   setTaskloder(false)
  }
   },[filteredTickets]) 

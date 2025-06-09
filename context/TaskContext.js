@@ -6,7 +6,7 @@ export const TaskContext = createContext();
 
 export const TaskProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState('');
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState({ visible: false, message: '' });
