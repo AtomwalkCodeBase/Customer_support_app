@@ -118,7 +118,8 @@ const Header = ({
           <View style={styles.userText}>
             <Text style={styles.greeting}>Hello,</Text>
             <Text style={styles.userName}>
-              {profile?.contact_name ? profile.contact_name : profile.customer_group}
+              {/* {profile?.contact_name ? profile.contact_name : profile.customer_group} */}
+              {profile?.name}
             </Text>
           </View>
         </View>

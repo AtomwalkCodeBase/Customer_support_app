@@ -33,7 +33,7 @@ export const TaskProvider = ({ children }) => {
     try {
       setLoading(true);
       const customerId = await getCustomerId();
-      const res = await getTasksList('ALL', customerId);
+      const res = await getTasksList('CUSTOMER', customerId);
       // console.log("Task data", res.data)
       setTickets(res.data);
     } catch (error) {

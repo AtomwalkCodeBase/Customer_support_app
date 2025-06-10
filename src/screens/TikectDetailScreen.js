@@ -201,23 +201,28 @@ const TicketDetailScreen = () => {
         </View>
 
 
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Image</Text>
+            </View>
+            <View style={{ justifyContent: "center", alignItems: "center"}}>
+            {ticket.ref_file ? (
+              <Image
+                source={{ uri: ticket.ref_file }}
+                style={{ width: 120, height: 120, borderRadius: 8, marginBottom: 10 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={{ color: '#888' }}>No image available</Text>
+            )}
+            </View>
+          </View>
+
           <FeedbackSection 
             ticket={ticket} 
             onSubmitFeedback={handleFeedbackSubmit}
           />
-      </ScrollView>
-
-      {/* <AddTicketScreen
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setSelectedTicket(null);
-          setIsEditMode(false);
-        }}
-        onSave={handleSaveTicket}
-        ticket={selectedTicket}
-        isEditMode={isEditMode}
-      /> */}
+              </ScrollView>
 
     </SafeAreaView>
   );

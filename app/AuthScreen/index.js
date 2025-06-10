@@ -5,7 +5,7 @@ import { View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, Keybo
 import { FontAwesome, Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logos from '../../assets/images/Atom_walk_logo.jpg';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { customerLogin } from "../../src/services/productServices";
 import { getCompanyInfo, getDBListInfo } from '../../src/services/authServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,6 +26,7 @@ const scaleHeight = (size) => (height / 812) * size;
 
 
 const LoginScreen = () => {
+  const { backTohome } = useLocalSearchParams();
   const router = useRouter();
   const [mobileNumber, setMobileNumber] = useState("");
   const [dbName, setDBName] = useState('');
@@ -223,7 +224,7 @@ const handleCompanyChange = async (item) => {
     }
 
     // Navigate to the PIN screen
-    router.push({ pathname: 'PinScreen' });
+    router.replace({ pathname: 'PinScreen' });
   } catch (error) {
     console.error('Error handling PIN/fingerprint login:', error);
   }
@@ -282,21 +283,6 @@ useEffect(() => {
 
 
       if (response.status === 200) {
-        // const { token, emp_id, e_id } = response.data;
-        
-        // Determine if the input is a mobile number (10 digits) or employee ID
-        // const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
-        
-        // if (isMobileNumber) {
-        //   await AsyncStorage.setItem('mobileNumber', mobileNumberOrEmpId);
-        // } else {
-        //   await AsyncStorage.setItem('empId', mobileNumberOrEmpId);
-        // }
-        // await AsyncStorage.setItem('mobileNumber', mobileNumberOrEmpId);
-        // await AsyncStorage.setItem('userToken', token);
-        // await AsyncStorage.setItem('empId', emp_id);
-        // await AsyncStorage.setItem('empNoId', String(e_id));
-        // await AsyncStorage.setItem('userPin', pin);
         await AsyncStorage.setItem("userPin", pin);
         await AsyncStorage.setItem("mobileNumber", mobileNumber);
         const userToken = response.data?.token;
@@ -337,8 +323,9 @@ useEffect(() => {
         }
         
         // Handle other error messages with brackets
-        const generalMatch = errorMessage.match(/\[(.*?)\]/);
-        setErrorMessage(generalMatch ? generalMatch[1] : errorMessage);
+        // const generalMatch = errorMessage.match(/\[(.*?)\]/);
+        // setErrorMessage(generalMatch ? generalMatch[1] : errorMessage);
+        setErrorMessage(errorMessage);
       } else {
         setErrorMessage('Invalid credentials. Please try again.');
       }
@@ -456,21 +443,25 @@ useEffect(() => {
                     </InputContainer>
                   </Card>
 
-                  {(userPin && bioStatus) && (
-                    <AlternativeLogin onPress={handlePressPassword}>
-                      <FingerprintIcon>
-                        <Entypo name="fingerprint" size={scaleWidth(24)} color="#fff" />
-                      </FingerprintIcon>
-                      <AlternativeLoginText>Login with PIN/Fingerprint</AlternativeLoginText>
-                    </AlternativeLogin>
-                  )}
+                  {!backTohome && (
+                    <>
+                      {(userPin && bioStatus) && (
+                        <AlternativeLogin onPress={handlePressPassword}>
+                          <FingerprintIcon>
+                            <Entypo name="fingerprint" size={scaleWidth(24)} color="#fff" />
+                          </FingerprintIcon>
+                          <AlternativeLoginText>Login with PIN/Fingerprint</AlternativeLoginText>
+                        </AlternativeLogin>
+                      )}
 
-                  <TouchableOpacity 
-                    onPress={handlePressForget}
-                    style={styles.forgetPinButton}
-                  >
-                    <Text style={styles.forgetPinText}>Forgot PIN?</Text>
-                  </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={handlePressForget}
+                        style={styles.forgetPinButton}
+                      >
+                        <Text style={styles.forgetPinText}>Forgot PIN?</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </Content>
                 </ScrollView>
                 </MainContent>

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Switch } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Switch, Dimensions } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -9,6 +9,13 @@ import { getProfileInfo } from '../services/authServices';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { getCustomerDetailList } from '../services/productServices';
 import { Loader } from '../components/Modals';
+import Constants from 'expo-constants';
+
+const { width, height } = Dimensions.get('window');
+
+const scaleWidth = (size) => (width / 375) * size;
+const scaleHeight = (size) => (height / 812) * size;
+
 
 const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
@@ -23,6 +30,8 @@ const ProfileScreen = () => {
   const [error, setError] = useState({ visible: false, message: '' });
   const router = useRouter();
   const navigation = useNavigation();
+
+    const appVersion = Constants.expoConfig?.version || '0.0.1';
 
   // Fetch customer details
   const fetchCustomerDetails = useCallback(async () => {
@@ -141,23 +150,33 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Profile Banner */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileBanner}>
-          <View style={styles.profileImageContainer}>
-            <Image source={{ uri: profile?.image }} style={styles.profileImage} />
+          <View >
+            <View style={styles.profileImageContainer}></View>
+              <Image source={{ uri: profile?.image }} style={styles.profileImage} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 16 }}></View>
+              <Text style={styles.profileName}>
+                {profile?.name}
+              </Text>
+              <View style={styles.badgeContainer}>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>Tasks: {profile.no_of_task}</Text>
+                </View>
+              </View>
+            {/* </View> */}
+            <TouchableOpacity
+              onPress={() => setIsLogoutModalVisible(true)}
+              accessibilityLabel="Logout"
+              style={styles.topLogoutButton}
+            >
+              <MaterialIcons name="logout" size={24} color={colors.error} />
+            </TouchableOpacity>
           </View>
-          <Text style={styles.profileName}>
-            {profile?.contact_name ? profile.contact_name : profile.customer_group}
-          </Text>
-          <View style={styles.badgeContainer}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Tasks: {profile.no_of_task}</Text>
-            </View> 
-          </View>
-        </View>
+        {/* </View> */}
 
-        {/* Contact Information */}
+        {/*  Contact Information */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
           <View style={styles.contactCard}>
@@ -255,6 +274,9 @@ const ProfileScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
+            <View style={styles.fixedFooter}>
+              <Text>Version Code: {appVersion}</Text>
+            </View>
       </ScrollView>
 
       {/* Logout Confirmation Modal */}
@@ -492,6 +514,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
+  topLogoutButton:{
+    position: 'absolute',
+    top: 30,
+    right: 20,
+    backgroundColor: colors.primaryTransparent,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    // elevation: 3,
+  },
+  fixedFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: scaleHeight(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#fff',
+    width: '100%',
+  },
+  footerText: {
+    color: colors.black,
+    fontSize: scaleWidth(14),
+    fontWeight: '500',
+  }
 });
 
 export default ProfileScreen;
