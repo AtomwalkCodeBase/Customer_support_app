@@ -34,8 +34,10 @@ export const TaskProvider = ({ children }) => {
       setLoading(true);
       const customerId = await getCustomerId();
       const res = await getTasksList('CUSTOMER', customerId);
+      // const res = await getTasksList('ALL', customerId);
+      const ticketsData = res.data.filter(item => item.task_type === "TICKET").reverse();
+      setTickets(ticketsData);
       // console.log("Task data", res.data)
-      setTickets(res.data);
     } catch (error) {
       console.log('Failed to fetch tasks:', error.message);
       setError({ visible: true, message: 'Failed to load tasks' });

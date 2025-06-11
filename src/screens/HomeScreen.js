@@ -166,13 +166,13 @@ const filteredTickets = useMemo(() => {
   };
 
   const onRefresh = async () => {
-    setRefreshing(true);
+    setTaskloder(true);
     try {
       await fetchTasks();
     } catch (error) {
       console.log('Failed to refresh tasks:', error);
     } finally {
-      setRefreshing(false);
+      setTaskloder(false);
     }
   };
 
@@ -189,6 +189,15 @@ const filteredTickets = useMemo(() => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
 
+        <Header
+          profile={profile || {}}
+          searchText={searchText}
+          onSearchChange={setSearchText}
+          onClearSearch={handleClearSearch}
+          onFilterPress={() => setShowDropdown(true)}
+          loading={isLoading}
+        />
+        
         <FilterDropdown
           visible={showDropdown}
           onClose={() => setShowDropdown(false)}
@@ -198,15 +207,6 @@ const filteredTickets = useMemo(() => {
           onClear={handleClearFilters}
         />
 
-        <Header
-          profile={profile || {}}
-          searchText={searchText}
-          onSearchChange={setSearchText}
-          onClearSearch={handleClearSearch}
-          onFilterPress={() => setShowDropdown(true)}
-          loading={isLoading}
-        />
-
         <Text style={styles.listTitle}>List of Tickets</Text>
 
         {filteredTickets.length > 0 ? (
@@ -214,7 +214,7 @@ const filteredTickets = useMemo(() => {
             style={styles.ticketsList}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl refreshing={taskLoder} onRefresh={onRefresh} />
             }
           >
             {filteredTickets.map((ticket) => (
@@ -278,7 +278,7 @@ const filteredTickets = useMemo(() => {
         message={error.message}
         onClose={clearError}
       />
-      <Loader visible={taskLoder} message={refreshing ? 'Refreshing tickets...' : 'Loading tickets...'} />
+      <Loader visible={taskLoder} message={taskLoder ? 'Refreshing tickets...' : 'Loading tickets...'} />
     </>
   );
 }

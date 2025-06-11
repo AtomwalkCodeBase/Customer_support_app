@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
-import { View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, SafeAreaView, ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform, } from "react-native";
+import { View, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, SafeAreaView, ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform, } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Logos from "../../assets/images/Atom_walk_logo.jpg";
 import { useRouter } from "expo-router";
-import { getCompanyInfo, getDBListInfo } from "../../src/services/authServices";
+import { getDBListInfo } from "../../src/services/authServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { publicAxiosRequest } from "../../src/services/HttpMethod";
 import Icon from "react-native-vector-icons/Ionicons";
-import {
-  customerLogin,
-  forgetCustomerPinView,
-} from "../../src/services/productServices";
-// import SuccessModal from '../../src/components/SuccessModal';
+import { forgetCustomerPinView } from "../../src/services/productServices";
 import CompanyDropdown from "../../src/components/CompanyDropdown";
 import { Loader, SuccessModal } from "../../src/components/Modals";
 import { colors } from "../../src/Styles/appStyle";
@@ -113,7 +108,6 @@ const ResetPinScreen = () => {
       if (response && response.status === 200) {
         // Clear userPin from AsyncStorage on success
         // await AsyncStorage.removeItem("userPin");
-        setShowPassField(true);
         // Set success message and show modal
         setSuccessMessage(
           "Your PIN reset request has been submitted successfully. " +
