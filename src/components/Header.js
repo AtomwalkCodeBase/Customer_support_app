@@ -15,7 +15,8 @@ import { getProfileInfo } from '../services/authServices';
 const Header = ({
   profile,
   searchText,
-  onSearchChange,
+  setSearchText,
+  onSearch,
   onClearSearch,
   onFilterPress,
   loading = false, // New prop to control skeleton loader
@@ -110,6 +111,11 @@ const Header = ({
     );
   }
 
+    const handleClearSearch = () => {
+    setSearchText('');
+    onSearch("");
+  };
+
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
@@ -123,29 +129,34 @@ const Header = ({
             </Text>
           </View>
         </View>
+
+        
       </View>
 
-      <View style={styles.searchContainer}>
+      {/* <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Feather name="search" size={20} color="#888" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search.."
             value={searchText}
-            onChangeText={onSearchChange}
+            onChangeText={(text) => {
+                setSearchText(text);
+                onSearch(text); // Call onSearch with every change
+              }}
             placeholderTextColor="#888"
           />
           {searchText ? (
-            <TouchableOpacity onPress={onClearSearch}>
+            <TouchableOpacity onPress={handleClearSearch}>
               <MaterialIcons name="clear" size={24} color="#888" />
             </TouchableOpacity>
           ) : null}
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
-          {/* <Feather name="sliders" size={20} color="white" /> */}
+          <Feather name="sliders" size={20} color="white" />
           <AntDesign name="filter" size={24} color="white" />
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -154,8 +165,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     padding: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTop: {
     flexDirection: 'row',

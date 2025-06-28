@@ -8,54 +8,152 @@ import {
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Completed':
-      return '#4CD964'; // Green
-    case 'Planned':
-      return '#5AC8FA'; // Blue
-    case 'In Progress':
-      return '#5856D6'; // Purple
-    case 'Deleted':
-      return '#FF6B6B'; // Red
-    case 'Pending':
-      return '#FFC107'; // Yellow/Amber
-    case 'On Hold':
-      return '#FF9500'; // Orange
-    case 'Waiting for Response':
-      return '#34AADC'; // Light Blue
-    case 'Not Planned':
-      return '#888888'; // Gray
-    default:
-      return '#888888'; // Default Gray
-  }
-};
-const TicketCard = ({ ticket, onPress, onEdit }) => {
+const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
+  const statusConfig = {
+    complete: { 
+      color: '#008000', // Green
+      icon: 'check-circle-outline',
+      label: 'Completed',
+      bgColor: '#4CD96415'
+    },
+    completed: { 
+      color: '#008000', // Green
+      icon: 'check-circle-outline',
+      label: 'Complete',
+      bgColor: '#4CD96415'
+    },
+    planned: { 
+      color: '#2196F3', // Blue
+      icon: 'schedule',
+      label: 'Planned',
+      bgColor: '#5AC8FA15'
+    },
+    'in progress': { 
+      color: '#5856D6', // Purple
+      icon: 'autorenew',
+      label: 'In Progress',
+      bgColor: '#5856D615'
+    },
+    deleted: { 
+      color: '#FF6B6B', // Red
+      icon: 'delete-outline',
+      label: 'Deleted',
+      bgColor: '#FF6B6B15'
+    },
+    pending: { 
+      color: '#FFC107', // Yellow/Amber
+      icon: 'hourglass-empty',
+      label: 'Pending',
+      bgColor: '#FFC10715'
+    },
+    'on hold': { 
+      color: '#FF9500', // Orange
+      icon: 'pause-circle-outline',
+      label: 'On Hold',
+      bgColor: '#FF950015'
+    },
+    hold: { 
+      color: '#FF9500', // Orange
+      icon: 'pause-circle-outline',
+      label: 'On Hold',
+      bgColor: '#FF950015'
+    },
+    'waiting for response': { 
+      color: '#34AADC', // Light Blue
+      icon: 'chat-bubble-outline',
+      label: 'Waiting for Response',
+      bgColor: '#34AADC15'
+    },
+    not_planned: { 
+      color: '#888888', // Gray
+      icon: 'event-busy',
+      label: 'Not Planned',
+      bgColor: '#88888815'
+    },
+    'not planned': { 
+      color: '#888888', // Gray
+      icon: 'event-busy',
+      label: 'Not Planned',
+      bgColor: '#88888815'
+    },
+    default: {
+      color: '#888888', // Gray
+      icon: 'help-outline',
+      label: 'Unknown',
+      bgColor: '#88888815'
+    }
+  };
+
+  const priorityConfig = {
+    low: { icon: 'keyboard-arrow-down', color: colors.textSecondary || '#666666' },
+    medium: { icon: 'remove', color: colors.warning || '#FFC107' },
+    high: { icon: 'keyboard-arrow-up', color: colors.error || '#FF3B30' }
+  };
+
+  // Normalize status key to lowercase for lookup
+  const statusKey = (ticket.task_status || 'default').toLowerCase();
+  const status = statusConfig[statusKey] || statusConfig.default;
+  const priority = priorityConfig[ticket.priority?.toLowerCase()] || priorityConfig.low;
 
   return (
-    <TouchableOpacity style={styles.ticketCard} onPress={onPress}>
-      <View style={styles.ticketHeader}>
-        <Text style={styles.ticketType}>
-          {ticket.task_category_name || ticket.task_type_display || 'N/A'}
-        </Text>
-        <View
-          style={[styles.statusBadge, { backgroundColor: `${getStatusColor(ticket.task_status)}33` }]}
-        >
-          <Text style={[styles.statusText, { color: getStatusColor(ticket.task_status) }]}>
-            {ticket.task_status || 'N/A'}
+    <TouchableOpacity style={[styles.modernCard, { 
+      shadowColor: status.color,
+      borderLeftColor: status.color,
+      borderLeftWidth: 4
+    }]} onPress={onPress}>
+      {/* Card Header */}
+      <View style={styles.modernCardHeader}>
+        <View style={styles.ticketIdContainer}>
+          <Text style={styles.ticketId}>{ticket.task_ref_id || "No Ticket ID"}</Text>
+        </View>
+        <View style={[styles.modernStatusBadge, { backgroundColor: status.bgColor }]}>
+          <MaterialIcons name={status.icon} size={14} color={status.color} />
+          <Text style={[styles.modernStatusText, { color: status.color }]}>
+            {status.label}
           </Text>
         </View>
       </View>
-      <Text style={styles.nameText}>{ticket.task_ref_id || 'Unnamed Task'}</Text>
-      <Text style={styles.ticketTitle}>{ticket.remarks || 'No description'}</Text>
-      <View style={styles.bottomRow}>
-        <View style={styles.dateContainer}>
-          <MaterialIcons name="event" size={16} color="#FF6B6B" />
-          <Text style={styles.dateText}>{ticket.task_date || 'N/A'}</Text>
+
+      {/* Card Title */}
+      <Text style={styles.modernCardTitle} numberOfLines={2}>
+        {ticket.remarks || 'No description'}
+      </Text>
+
+      {/* Category Tags */}
+      <View style={styles.modernTagContainer}>
+        <View style={styles.modernTag}>
+          <MaterialIcons name="category" size={12} color={colors.textSecondary || '#666666'} />
+          <Text style={styles.modernTagText}>{ticket.task_category_name || 'N/A'}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={(e) => {
+        {ticket.task_sub_category_name && (
+          <View style={[styles.modernTag, styles.modernSubTag]}>
+            <Text style={styles.modernTagText}>{ticket.task_sub_category_name}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Card Footer  */}
+        <View style={styles.modernCardFooter}>
+          <View style={styles.dateContainer}>
+            <MaterialIcons name="calendar-month" size={14} color={colors.textSecondary || '#666666'} />
+            <Text style={styles.modernDateText}>
+              {ticket.task_date 
+          ? (() => {
+              // Expecting format: DD-MM-YYYY
+              const [day, month, year] = ticket.task_date.split('-');
+              const monthNames = [
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+              ];
+              const monthIndex = parseInt(month, 10) - 1;
+              return `${day} ${monthNames[monthIndex]}, ${year}`;
+            })()
+          : 'N/A'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={(e) => {
             e.stopPropagation();
             onEdit(ticket);
           }}
@@ -66,53 +164,82 @@ const TicketCard = ({ ticket, onPress, onEdit }) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
-  ticketCard: {
-    backgroundColor: colors.white,
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
+  modernCard: {
+    backgroundColor: colors.background || '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.black || '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#00000008',
   },
-  ticketHeader: {
+  modernCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  ticketType: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  statusBadge: {
+  ticketIdContainer: {
+    backgroundColor: colors.backgroundDark || '#F5F5F5',
     paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  statusText: {
+  ticketId: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: colors.textSecondary || '#666666',
+    fontFamily: 'monospace',
   },
-  nameText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textPrimary,
-    marginBottom: 5,
+  modernStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
   },
-  ticketTitle: {
+  modernStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  modernCardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 10,
+    fontWeight: '600',
+    color: colors.textPrimary || '#000000',
+    marginBottom: 16,
+    lineHeight: 22,
   },
-  bottomRow: {
+  modernTagContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  modernTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.backgroundDark || '#F5F5F5',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  modernSubTag: {
+    backgroundColor: colors.primaryTransparent || '#2196F315',
+  },
+  modernTagText: {
+    fontSize: 12,
+    color: colors.textSecondary || '#666666',
+    fontWeight: '500',
+  },
+  modernCardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -120,13 +247,59 @@ const styles = StyleSheet.create({
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
-  dateText: {
-    color: '#888',
+  modernDateText: {
     fontSize: 12,
-    marginLeft: 5,
+    color: colors.textSecondary || '#666666',
+    fontWeight: '500',
   },
-  editButton: {
+  modernPriority: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 4,
+  },
+  modernPriorityText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  modernEmptyState: {
+    backgroundColor: colors.background || '#FFFFFF',
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    shadowColor: colors.black || '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.backgroundDark || '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary || '#000000',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary || '#666666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 107, 107, 0.1)',
