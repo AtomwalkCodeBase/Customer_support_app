@@ -19,17 +19,6 @@ const _layout = () => {
         }}
       />
 
-        <Tabs.Screen
-        name="chart"
-        options={{
-          title: "Chart",
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <AntDesign name="barschart" size={24} color={color} />
-          ),
-        }}
-      ></Tabs.Screen>
-
       <Tabs.Screen
         name="profile"
         options={{

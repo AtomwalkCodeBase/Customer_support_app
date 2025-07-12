@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Switch, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -10,6 +10,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { getCustomerDetailList } from '../services/productServices';
 import { Loader } from '../components/Modals';
 import Constants from 'expo-constants';
+import HeaderComponent from '../components/HeaderComponent';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,16 +140,11 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.editButton}>
-          {/* <MaterialIcons name="edit" size={24} color={colors.white} /> */}
-        </TouchableOpacity>
-      </View>
+      <HeaderComponent
+        headerTitle="profile" 
+        onBackPress={handleBack} 
+        // onBackPress={() => router.back()} 
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileBanner}>

@@ -40,6 +40,12 @@ const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
       label: 'Deleted',
       bgColor: '#FF6B6B15'
     },
+    "closed- not successful": { 
+      color: '#FF6B6B', // Red
+      icon: 'clear',
+      label: 'Closed-Not Successful',
+      bgColor: '#FF6B6B15'
+    },
     pending: { 
       color: '#FFC107', // Yellow/Amber
       icon: 'hourglass-empty',
@@ -115,7 +121,7 @@ const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
       </View>
 
       {/* Card Title */}
-      <Text style={styles.modernCardTitle} numberOfLines={2}>
+      <Text style={styles.modernCardTitle} numberOfLines={2} >
         {ticket.remarks || 'No description'}
       </Text>
 
@@ -151,16 +157,15 @@ const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
           : 'N/A'}
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={(e) => {
-            e.stopPropagation();
-            onEdit(ticket);
+          {statusKey == 'not planned'  && 
+          <TouchableOpacity style={styles.editButton} 
+            onPress={(e) => { e.stopPropagation(); 
+            onEdit(ticket)
           }}
-        >
+          >
           <Ionicons name="pencil" size={16} color="#FF6B6B" />
           <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </TouchableOpacity>
   );

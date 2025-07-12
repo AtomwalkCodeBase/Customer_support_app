@@ -1,18 +1,25 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { colors } from '../Styles/appStyle';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const StatCard = ({ count, label, color, icon }) => (
-  <View style={[styles.statCard, { borderLeftColor: color }]}>
-    <View style={[styles.statIconContainer, { backgroundColor: `${color}15` }]}>
-      <MaterialIcons name={icon} size={24} color={color} />
-    </View>
-    <View style={styles.statContent}>
-      <Text style={[styles.statCount, { color }]}>{count}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  </View>
+const StatCard = ({ count, label, color, icon, onPress, isActive }) => (
+  <TouchableOpacity
+    activeOpacity={0.7}
+    onPress={onPress}
+    disabled={!onPress}
+    style={[styles.statCard, { borderColor: color, borderWidth: isActive ? 1 : 0,  }]}
+  >
+    {/* <View style={[styles.statCard, { borderLeftColor: color, borderWidth: isActive ? 1 : 0 }]}> */}
+      <View style={[styles.statIconContainer, { backgroundColor: `${color}15` }]}>
+        <MaterialIcons name={icon} size={24} color={color} />
+      </View>
+      <View style={styles.statContent}>
+        <Text style={[styles.statCount, { color }]}>{count}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
+      </View>
+    {/* </View> */}
+  </TouchableOpacity>
 );
 
 export default StatCard

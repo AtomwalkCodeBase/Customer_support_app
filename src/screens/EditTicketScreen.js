@@ -9,6 +9,7 @@ import TextInputField from '../components/TextField';
 import FileUploadField from '../components/FilePicker';
 import { colors } from '../Styles/appStyle';
 import DropdownPicker from '../components/DropdownPicker';
+import HeaderComponent from '../components/HeaderComponent';
 
 const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   const [formState, setFormState] = useState({
@@ -40,15 +41,15 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   }, [visible, ticket]);
 
   // Reset form
-  const resetForm = () => {
-    setFormState({
-      description: '',
-      fileUri: null,
-      fileName: '',
-      fileMimeType: '',
-      hadAttachment: false,
-    });
-  };
+  // const resetForm = () => {
+  //   setFormState({
+  //     description: '',
+  //     fileUri: null,
+  //     fileName: '',
+  //     fileMimeType: '',
+  //     hadAttachment: false,
+  //   });
+  // };
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -167,12 +168,12 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
     };
   return (
     <>
-      <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+      <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
         >
-          <View style={styles.header}>
+          {/* <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Feather name="x" size={24} color="white" />
             </TouchableOpacity>
@@ -180,7 +181,11 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
             <TouchableOpacity onPress={resetForm} style={styles.clearButton}>
               <Text style={styles.clearButtonText}>Clear</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
+          <HeaderComponent
+            headerTitle="Edit Ticket" 
+            onBackPress={onClose}
+          />
 
           <ScrollView style={styles.formContainer}>
             <DropdownPicker

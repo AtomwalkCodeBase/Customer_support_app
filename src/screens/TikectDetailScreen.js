@@ -30,7 +30,6 @@ const InfoItem = ({ icon, label, value, onPress, isLink }) => {
             styles.infoValue, 
             isLink && styles.linkText
           ]}
-          numberOfLines={2}
         >
           {value}
         </Text>
