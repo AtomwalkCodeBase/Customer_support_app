@@ -52,11 +52,23 @@ const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
       label: 'Pending',
       bgColor: '#FFC10715'
     },
+    // 'on hold': { 
+    //   color: '#FF9500', // Orange
+    //   icon: 'pause-circle-outline',
+    //   label: 'On Hold',
+    //   bgColor: '#FF950015'
+    // },
+    // hold: { 
+    //   color: '#FF9500', // Orange
+    //   icon: 'pause-circle-outline',
+    //   label: 'On Hold',
+    //   bgColor: '#FF950015'
+    // },
     'on hold': { 
-      color: '#FF9500', // Orange
+      color: '#FF6B6B', // Orange
       icon: 'pause-circle-outline',
       label: 'On Hold',
-      bgColor: '#FF950015'
+       bgColor: '#FF6B6B15'
     },
     hold: { 
       color: '#FF9500', // Orange
@@ -77,10 +89,10 @@ const TicketCard = React.memo(({ ticket, onPress, onEdit }) => {
       bgColor: '#88888815'
     },
     'not planned': { 
-      color: '#888888', // Gray
+     color: '#FF9500', // Orange
       icon: 'event-busy',
       label: 'Not Planned',
-      bgColor: '#88888815'
+       bgColor: '#FF950015'
     },
     default: {
       color: '#888888', // Gray

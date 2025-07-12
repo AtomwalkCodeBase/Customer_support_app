@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Dropdown } from "react-native-element-dropdown";
 import { colors } from "../Styles/appStyle";
 
@@ -33,7 +33,7 @@ const FilterBar = ({
         />
         {searchQuery ? (
           <TouchableOpacity onPress={() => setSearchQuery("")}> 
-            <MaterialIcons name="clear" size={20} color={colors.textSecondary} />
+            <AntDesign name="closecircleo" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         ) : null}
       </View>

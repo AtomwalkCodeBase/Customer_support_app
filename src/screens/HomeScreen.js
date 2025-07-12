@@ -90,7 +90,7 @@ export default function TicketListScreen() {
     {
       count: tickets.filter((t) => t.task_status === "Not Planned").length,
       label: "Not Planned",
-      color: colors.warning,
+      color: "#FF9500",
       icon: "event-busy",
       status: "Not Planned",
     },
@@ -139,6 +139,7 @@ export default function TicketListScreen() {
               : ticket
           )
         );
+        setSearchQuery(ticketData.remarks || "");
       } else {
         setTickets([
           ...tickets,

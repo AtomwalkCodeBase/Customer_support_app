@@ -54,10 +54,10 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   // Handle form submission
   const handleSubmit = async () => {
     // Check if form is empty (after clearing)
-    if (!formState.description.trim() && !formState.fileUri && !formState.hadAttachment) {
+    if (!formState.description.trim()) {
       setModalState((prev) => ({
         ...prev,
-        errorMessage: 'Please fill in the form before updating',
+        errorMessage: 'Please provide a description',
         errorVisible: true,
       }));
       return;
@@ -77,12 +77,13 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
       formData.append('remarks', formState.description.trim());
       formData.append('task_id', ticket.id.toString());
 
-      // Handle file logic
-      if (!formState.fileUri && formState.hadAttachment === false) {
-        // Case: No image selected or image cleared
-        formData.append('uploaded_file', null); // Send empty string
-      } else {
-        // Case: New image selected
+      const originalHadFile = !!ticket.ref_file;
+      const fileRemoved = originalHadFile && !formState.fileUri;
+
+      if (fileRemoved) {
+        formData.append('uploaded_file', '');
+      }
+      else if (formState.fileUri && formState.fileUri !== ticket.ref_file) {
         const fileExtension = formState.fileName.split('.').pop() || 'jpg';
         formData.append('uploaded_file', {
           uri: Platform.OS === 'ios' ? formState.fileUri.replace('file://', '') : formState.fileUri,
@@ -107,7 +108,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         }
 
         onSave(updatedTicket);
-        setModalState((prev) => ({ ...prev, successVisible: true }));
+        setModalState((prev) => ({ ...prev, successVisible: true, isLoading: false }));
       } else {
         throw new Error(`Unexpected status code: ${res.status}`);
       }
@@ -163,9 +164,10 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         fileUri: null,
         fileName: '',
         fileMimeType: '',
-        hadAttachment: false, // <- Add this to signal image was removed
+        hadAttachment: true, // Mark that it **had** an image
       }));
     };
+
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
