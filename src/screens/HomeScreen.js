@@ -7,32 +7,31 @@ import {
   StatusBar,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Header from "../components/Header";
 import StatCard from "../components/StatCard";
 import { TaskContext } from "../../context/TaskContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors } from "../Styles/appStyle";
 import AddTicketScreen from "./AddTicketScreen";
 import EditTicketScreen from "./EditTicketScreen";
-import { ErrorModal, Loader } from "../components/Modals";
+import { ErrorModal } from "../components/Modals";
 import FilterBar from "../components/FilterBar";
 import TicketList from "../components/TicketList";
-import { getCustomerDetailList } from "../services/productServices";
 import { getFilterOptions, filterTickets } from "../utils/filterUtils";
+import Loader from "../components/Loader";
+import { AppContext } from "../../context/AppContext";
 
 export default function TicketListScreen() {
-  const { tickets, setTickets, categories, loadings, setLoading, error, setError, fetchTasks, fetchTaskCategories, clearError} = useContext(TaskContext);
+  const { tickets, setTickets, categories, loadings, setLoading, error, setError, fetchTasks, fetchTaskCategories, clearError } = useContext(TaskContext);
+  const { profile, fetchCustomerDetails} = useContext(AppContext);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
-  const [isError, setisError] = useState({ visible: false, message: "" });
-  const [profile, setProfile] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState(null);
   const [filterValue, setFilterValue] = useState(null);
@@ -45,31 +44,21 @@ export default function TicketListScreen() {
   useEffect(() => {
     fetchTaskCategories();
     fetchTasks();
-  }, []);
-
-  useEffect(() => {
-    const fetchCustomerDetails = async () => {
-      try {
-        setisLoading(true);
-        const customerId = await AsyncStorage.getItem("Customer_id");
-        const res = await getCustomerDetailList(customerId);
-        const customer = res.data.find(
-          (item) => item.id?.toString() === customerId?.toString()
-        );
-        setProfile(customer || {});
-        await AsyncStorage.setItem("profilename", customer.name);
-      } catch (error) {
-        setisError({
-          visible: true,
-          message: "Failed to load Customer Details",
-        });
-      } finally {
-        setisLoading(false);
-      }
-    };
-    fetchTaskCategories();
     fetchCustomerDetails();
   }, []);
+
+  const onRefresh = async () => {
+  try {
+    setRefreshing(true);
+    await fetchTasks();
+  } catch (err) {
+    console.error("Failed to refresh:", err);
+    setError({ visible: true, message: "Failed to refresh tickets" });
+  } finally {
+    setRefreshing(false);
+  }
+};
+
 
   // StatCard config for DRY rendering
   const statCardsConfig = [
@@ -146,9 +135,9 @@ export default function TicketListScreen() {
           { ...ticketData, id: ticketData.tempId || ticketData.id },
         ]);
       }
-      setModalVisible(false);
-      setSelectedTicket(null);
-      setIsEditMode(false);
+      // setModalVisible(false);
+      // setSelectedTicket(null);
+      // setIsEditMode(false);
       await fetchTasks();
     } catch (error) {
       setError({ visible: true, message: "Failed to save ticket" });
@@ -175,7 +164,10 @@ export default function TicketListScreen() {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
         <Header profile={profile || {}} />
-        <ScrollView style={{ marginHorizontal: 16, marginTop: 20 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ marginHorizontal: 16, marginTop: 20 }} showsVerticalScrollIndicator={false}   refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  }
+>
           <View style={styles.statsGrid}>
             {statCardsConfig.map((card) => (
               <StatCard
@@ -221,11 +213,11 @@ export default function TicketListScreen() {
             tickets={filteredTickets}
             onView={handleViewTicket}
             onEdit={handleEditTicket}
-            onCreate={() => {
-              setSelectedTicket(null);
-              setIsEditMode(false);
-              setModalVisible(true);
-            }}
+            // onCreate={() => {
+            //   setSelectedTicket(null);
+            //   setIsEditMode(false);
+            //   setModalVisible(true);
+            // }}
           />
         </ScrollView>
 

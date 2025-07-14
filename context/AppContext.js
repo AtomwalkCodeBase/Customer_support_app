@@ -6,7 +6,7 @@ import { getCompanyInfo } from '../src/services/authServices';
 import { useRouter } from 'expo-router';
 import NetInfo from '@react-native-community/netinfo';
 import NetworkErrorModal from '../src/components/NetworkErrorModal';
-import { customerLogin } from '../src/services/productServices';
+import { customerLogin, getCustomerDetailList } from '../src/services/productServices';
 import { userLoginURL } from '../src/services/ConstantServices';
 
 const AppContext = createContext();
@@ -17,6 +17,8 @@ const AppProvider = ({ children }) => {
     const [companyInfo, setCompanyInfo] = useState(null);
     const [dbName, setDbName] = useState(null);
     const [isConnected, setIsConnected] = useState(true);
+    const [profile, setProfile] = useState({});
+    const [isError, setIsError] = useState({ visible: false, message: "" });
 
     const router = useRouter();
 
@@ -178,6 +180,26 @@ const AppProvider = ({ children }) => {
         isLoggedIn();
     }, []);
 
+    const fetchCustomerDetails = async () => {
+      try {
+        setIsLoading(true);
+        const customerId = await AsyncStorage.getItem("Customer_id");
+        const res = await getCustomerDetailList(customerId);
+        const customer = res.data.find(
+          (item) => item.id?.toString() === customerId?.toString()
+        );
+        setProfile(customer || {});
+        await AsyncStorage.setItem("profilename", customer.name);
+      } catch (error) {
+        setIsError({
+          visible: true,
+          message: "Failed to load Customer Details",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     return (
         <AppContext.Provider value={{
             login,
@@ -188,7 +210,11 @@ const AppProvider = ({ children }) => {
             dbName,
             isConnected,
             checkNetwork,
-            setIsLoading
+            setIsLoading,
+            profile,
+            fetchCustomerDetails,
+            isLoading,
+            isError
         }}>
             {children}
             <NetworkErrorModal 

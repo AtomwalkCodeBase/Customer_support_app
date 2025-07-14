@@ -8,9 +8,10 @@ import { useNavigation, useRouter } from 'expo-router';
 import { getProfileInfo } from '../services/authServices';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { getCustomerDetailList } from '../services/productServices';
-import { Loader } from '../components/Modals';
 import Constants from 'expo-constants';
 import HeaderComponent from '../components/HeaderComponent';
+import Loader from '../components/Loader';
+import { StatusBar } from 'expo-status-bar';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,10 +20,9 @@ const scaleHeight = (size) => (height / 812) * size;
 
 
 const ProfileScreen = () => {
-  const { logout } = useContext(AppContext);
+  const { profile, logout, fetchCustomerDetails } = useContext(AppContext);
   const [userPin, setUserPin] = useState(null);
   const [profileImg, setProfileImg] = useState({});
-  const [profile, setProfile] = useState([]);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isBiometricModalVisible, setIsBiometricModalVisible] = useState(false); // New state for biometric modal
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -32,24 +32,7 @@ const ProfileScreen = () => {
   const router = useRouter();
   const navigation = useNavigation();
 
-    const appVersion = Constants.expoConfig?.version || '0.0.1';
-
-  // Fetch customer details
-  const fetchCustomerDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      const customerId = await AsyncStorage.getItem('Customer_id');
-      const res = await getCustomerDetailList(customerId);
-      // console.log("data of customer", res.data)
-      // const customer = res.data?.find(item => item.id?.toString() === customerId?.toString());
-      setProfile(Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : {});
-    } catch (error) {
-      console.log('Failed to fetch Customer Details:', error.message);
-      setError({ visible: true, message: 'Failed to load Customer Details' });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const appVersion = Constants.expoConfig?.version || '0.0.1';
 
   // Load user pin and biometric setting from AsyncStorage
   useEffect(() => {
@@ -66,7 +49,7 @@ const ProfileScreen = () => {
     };
     fetchUserData();
     fetchCustomerDetails();
-  }, [fetchCustomerDetails]);
+  }, []);
 
   // Fetch profile image
   useEffect(() => {
@@ -140,8 +123,9 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       <HeaderComponent
-        headerTitle="profile" 
+        headerTitle="Profile" 
         onBackPress={handleBack} 
         // onBackPress={() => router.back()} 
       />
@@ -162,13 +146,23 @@ const ProfileScreen = () => {
                 </View>
               </View>
             {/* </View> */}
+            <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
               onPress={() => setIsLogoutModalVisible(true)}
               accessibilityLabel="Logout"
-              style={styles.topLogoutButton}
+              style={styles.actionButtonSmall}
             >
               <MaterialIcons name="logout" size={24} color={colors.error} />
             </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handlePressPassword}
+              accessibilityLabel="Update Pin"
+              style={styles.actionButtonSmall}
+            >
+              <MaterialIcons name="lock" size={24} color={colors.error} />
+            </TouchableOpacity>
+            </View>
           </View>
         {/* </View> */}
 
@@ -510,21 +504,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-  topLogoutButton:{
+  actionButtonsContainer: {
     position: 'absolute',
     top: 30,
     right: 20,
-    backgroundColor: colors.primaryTransparent,
+  },
+  actionButtonSmall: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     // elevation: 3,
+    backgroundColor: colors.primaryTransparent
   },
   fixedFooter: {
     position: 'absolute',
