@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { colors } from '../Styles/appStyle';
 
 const TextInputField = ({
   label,
@@ -9,6 +10,7 @@ const TextInputField = ({
   multiline,
   numberOfLines,
   editable,
+  errorMessage
 }) => {
   return (
     <View style={styles.inputGroup}>
@@ -24,6 +26,11 @@ const TextInputField = ({
         onChangeText={onChangeText}
         editable={editable}
       />
+      {errorMessage && (
+        <Text style={{ marginTop: 7, color: colors.error, fontSize: 12 }}>
+          {errorMessage}
+        </Text>
+      )}
     </View>
   );
 };

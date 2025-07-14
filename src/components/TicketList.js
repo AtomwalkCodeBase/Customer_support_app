@@ -3,9 +3,9 @@ import { View } from "react-native";
 import TicketCard from "./TicketCard";
 import EmptyState from "./EmptyState";
 
-const TicketList = ({ tickets, onView, onEdit, onCreate }) => {
+const TicketList = ({ tickets, onView, onEdit }) => {
   if (!tickets.length) {
-    return <EmptyState hasFilters onCreatePress={onCreate} />;
+    return <EmptyState hasFilters />;
   }
   return (
     <View style={{ gap: 1 }}>
