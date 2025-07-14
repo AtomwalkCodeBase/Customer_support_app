@@ -13,12 +13,13 @@ import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addCustomerTicket, getTaskCategory } from '../services/productServices';
-import { SuccessModal, ErrorModal, Loader } from '../components/Modals';
+import { SuccessModal, ErrorModal } from '../components/Modals';
 import DropdownPicker from '../components/DropdownPicker';
 import TextInputField from '../components/TextField';
 import FileUploadField from '../components/FilePicker';
 import { colors } from '../Styles/appStyle';
 import HeaderComponent from '../components/HeaderComponent';
+import Loader from '../components/Loader';
 
 const AddTicketScreen = ({ visible, onClose, onSave }) => {
   // Form state: Store full category objects instead of just IDs
@@ -29,13 +30,11 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     file: null,
   });
 
-  // Modal state for loading and feedback
-  const [modalState, setModalState] = useState({
-    isLoading: false,
-    successVisible: false,
-    errorVisible: false,
-    errorMessage: '',
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Categories data
   const [categories, setCategories] = useState({ main: [], sub: [] });
@@ -45,17 +44,13 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
   const fetchTaskCategories = useCallback(async () => {
     try {
       const res = await getTaskCategory();
-      // console.log('Task Categories API Response:', res.data); // Debug API response
       setCategories({
         main: res.data.filter((item) => item.e_type === 'TASK'),
         sub: res.data.filter((item) => item.e_type === 'T_SUB'),
       });
     } catch (error) {
-      setModalState({
-        ...modalState,
-        errorMessage: 'Failed to load categories',
-        errorVisible: true,
-      });
+      setErrorMessage('Failed to load categories');
+      setErrorVisible(true);
     }
   }, []);
 
@@ -66,10 +61,7 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
         (sub) => sub.parent_category_id === formState.mainCategory.id
       );
       setHasSubCategories(subCategories.length > 0);
-      setFormState((prev) => ({
-        ...prev,
-        subCategory: null, // Reset subcategory when main category changes
-      }));
+      setFormState((prev) => ({...prev, subCategory: null}));
     } else {
       setHasSubCategories(false);
       setFormState((prev) => ({ ...prev, subCategory: null }));
@@ -84,10 +76,6 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     }
   }, [visible, fetchTaskCategories]);
 
-  // Debug state changes
-  // useEffect(() => {
-  //   console.log('formState:', formState);
-  // }, [formState]);
 
   // Reset form
   const resetForm = () => {
@@ -98,30 +86,28 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
       file: null,
     });
     setHasSubCategories(false);
+    setFieldErrors({}); // Clear field errors
   };
 
   // Handle form submission
   const handleSubmit = async () => {
-    // Validate form
-    if (!formState.description.trim()) {
-      setModalState({
-        ...modalState,
-        errorMessage: 'Please enter a description',
-        errorVisible: true,
-      });
-      return;
-    }
-
+    // Validate form 
+    let errors = {};
     if (!formState.mainCategory?.id) {
-      setModalState({
-        ...modalState,
-        errorMessage: 'Please select a category',
-        errorVisible: true,
-      });
+      errors.mainCategory = "Please select a category";
+    }
+    if (hasSubCategories && !formState.subCategory?.id) {
+      errors.subCategory = "Please select a sub category";
+    }
+    if (!formState.description) {
+      errors.description = "Please enter a description";
+    }
+    setFieldErrors(errors);
+  
+    if (Object.keys(errors).length > 0) {
       return;
     }
-
-    setModalState({ ...modalState, isLoading: true });
+    setIsLoading(true)
 
     try {
       const customerId = await AsyncStorage.getItem('Customer_id');
@@ -168,25 +154,23 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
         };
 
         onSave(newTicket);
-        setModalState({ ...modalState, successVisible: true });
+        setSuccessVisible(true);
       } else {
         throw new Error('Failed to submit ticket');
       }
     } catch (error) {
-      setModalState({
-        ...modalState,
-        errorMessage: error.message || 'Failed to submit ticket',
-        errorVisible: true,
-      });
+      setErrorMessage(error.message || 'Failed to submit ticket');
+      setErrorVisible(true);
     } finally {
-      setModalState({ ...modalState, isLoading: false });
+      setIsLoading(false);
     }
   };
 
   // Handle success modal close
   const handleSuccessClose = () => {
-    setModalState({ ...modalState, successVisible: false });
+    setSuccessVisible(false);
     resetForm();
+    setFieldErrors({});
     onClose();
   };
 
@@ -202,11 +186,8 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
         setFormState({ ...formState, file: result.assets[0] });
       }
     } catch (error) {
-      setModalState({
-        ...modalState,
-        errorMessage: 'Failed to pick image',
-        errorVisible: true,
-      });
+    setErrorMessage('Failed to pick image');
+    setErrorVisible(true);
     }
   };
 
@@ -217,56 +198,50 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
 
   return (
     <>
-      <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+      <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={handleSuccessClose}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
         >
-          {/* <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color="white" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Add New Ticket</Text>
-            <TouchableOpacity onPress={resetForm} style={styles.clearButton}>
-              <Text style={styles.clearButtonText}>Clear</Text>
-            </TouchableOpacity>
-          </View> */}
           <HeaderComponent
             headerTitle="Add New Ticket" 
-            onBackPress={onClose}
+            onBackPress={handleSuccessClose}
           />
 
           <ScrollView style={styles.formContainer}>
             <DropdownPicker
               label="Main Category"
-              value={formState.mainCategory} // Pass the full category object
+              value={formState.mainCategory}
               items={categories.main}
               onSelect={(item) => setFormState({ ...formState, mainCategory: item })}
               placeholder="Select Category"
-              disabled={modalState.isLoading}
-              isLoading={modalState.isLoading}
+              disabled={isLoading}
+              isLoading={isLoading}
+              errorMessage={fieldErrors.mainCategory}
             />
 
             {hasSubCategories && (
               <DropdownPicker
                 label="Subcategory"
-                value={formState.subCategory} // Pass the full subcategory object
+                value={formState.subCategory}
                 items={categories.sub.filter((sub) => sub.parent_category_id === formState.mainCategory?.id)}
                 onSelect={(item) => setFormState({ ...formState, subCategory: item })}
                 placeholder="Select Subcategory"
-                disabled={modalState.isLoading}
-                isLoading={modalState.isLoading}
+                disabled={isLoading}
+                isLoading={isLoading}
+                errorMessage={fieldErrors.subCategory}
               />
             )}
 
             <TextInputField
-              label="Remark"
+              label="Description"
               value={formState.description}
               onChangeText={(text) => setFormState({ ...formState, description: text })}
               placeholder="Enter ticket description"
               multiline
               numberOfLines={5}
-              editable={!modalState.isLoading}
+              editable={!isLoading}
+              errorMessage={fieldErrors.description}
             />
 
             <FileUploadField
@@ -275,16 +250,16 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
               fileName={formState.file?.name}
               onPick={pickDocument}
               onRemove={removeFile}
-              isLoading={modalState.isLoading}
+              isLoading={isLoading}
               hadAttachment={false}
               isEditMode={false}
             />
           </ScrollView>
 
           <TouchableOpacity
-            style={[styles.saveTicketButton, modalState.isLoading && styles.disabledButton]}
+            style={[styles.saveTicketButton, isLoading && styles.disabledButton]}
             onPress={handleSubmit}
-            disabled={modalState.isLoading}
+            disabled={isLoading}
           >
             <Text style={styles.saveTicketButtonText}>Add Ticket</Text>
           </TouchableOpacity>
@@ -292,16 +267,21 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
       </Modal>
 
       <SuccessModal
-        visible={modalState.successVisible}
+        visible={successVisible}
         message="Ticket submitted successfully!"
         onClose={handleSuccessClose}
+        onAutoClose={() => {
+          setSuccessVisible(false);
+          onClose()
+        }}
+        autoCloseDelay={3000}
       />
       <ErrorModal
-        visible={modalState.errorVisible}
-        message={modalState.errorMessage}
-        onClose={() => setModalState({ ...modalState, errorVisible: false })}
+        visible={errorVisible}
+        message={errorMessage}
+        onClose={() => setErrorVisible(false)}
       />
-      <Loader visible={modalState.isLoading} message="Submitting ticket..." />
+      <Loader visible={isLoading} message="Submitting ticket..." />
     </>
   );
 };

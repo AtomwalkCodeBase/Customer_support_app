@@ -4,12 +4,13 @@ import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addCustomerTicket } from '../services/productServices';
-import { SuccessModal, ErrorModal, Loader } from '../components/Modals';
+import { SuccessModal, ErrorModal } from '../components/Modals';
 import TextInputField from '../components/TextField';
 import FileUploadField from '../components/FilePicker';
 import { colors } from '../Styles/appStyle';
 import DropdownPicker from '../components/DropdownPicker';
 import HeaderComponent from '../components/HeaderComponent';
+import Loader from '../components/Loader';
 
 const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   const [formState, setFormState] = useState({
@@ -20,12 +21,11 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
     hadAttachment: false,
   });
 
-  const [modalState, setModalState] = useState({
-    isLoading: false,
-    successVisible: false,
-    errorVisible: false,
-    errorMessage: '',
-  });
+    const [isLoading, setIsLoading] = useState(false);
+    const [successVisible, setSuccessVisible] = useState(false);
+    const [errorVisible, setErrorVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
 
   // Load form data when modal opens
   React.useEffect(() => {
@@ -54,16 +54,17 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
   // Handle form submission
   const handleSubmit = async () => {
     // Check if form is empty (after clearing)
+    let errors = {};
     if (!formState.description.trim()) {
-      setModalState((prev) => ({
-        ...prev,
-        errorMessage: 'Please provide a description',
-        errorVisible: true,
-      }));
+      errors.description = "Please provide a description";
+    }
+    setFieldErrors(errors);
+  
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
-    setModalState((prev) => ({ ...prev, isLoading: true }));
+    setIsLoading(true);
 
     try {
       const customer_id = await AsyncStorage.getItem('Customer_id');
@@ -108,29 +109,25 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         }
 
         onSave(updatedTicket);
-        setModalState((prev) => ({ ...prev, successVisible: true, isLoading: false }));
+        setSuccessVisible(true);
       } else {
         throw new Error(`Unexpected status code: ${res.status}`);
       }
     } catch (error) {
       console.error('Error in handleSubmit:', error);
-      setModalState((prev) => ({
-        ...prev,
-        errorMessage: error.message || 'Failed to update ticket',
-        errorVisible: true,
-      }));
+      setErrorMessage(error.message || 'Failed to update ticket');
+      setErrorVisible(true);
     } finally {
-      setModalState((prev) => ({ ...prev, isLoading: false }));
+      setIsLoading(false);
     }
   };
 
   // Handle success modal close
   const handleSuccessClose = () => {
-    setModalState((prev) => ({ ...prev, successVisible: false }));
+    setSuccessVisible(false);
     onClose();
   };
   
-
   // Pick document
   const pickDocument = async () => {
     try {
@@ -149,11 +146,8 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         }));
       }
     } catch (error) {
-      setModalState((prev) => ({
-        ...prev,
-        errorMessage: 'Failed to pick image',
-        errorVisible: true,
-      }));
+      setErrorMessage('Failed to pick image');
+      setErrorVisible(true);
     }
   };
 
@@ -164,7 +158,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
         fileUri: null,
         fileName: '',
         fileMimeType: '',
-        hadAttachment: true, // Mark that it **had** an image
+        hadAttachment: true, 
       }));
     };
 
@@ -175,15 +169,6 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
         >
-          {/* <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color="white" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Edit Ticket</Text>
-            <TouchableOpacity onPress={resetForm} style={styles.clearButton}>
-              <Text style={styles.clearButtonText}>Clear</Text>
-            </TouchableOpacity>
-          </View> */}
           <HeaderComponent
             headerTitle="Edit Ticket" 
             onBackPress={onClose}
@@ -197,7 +182,7 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
               onSelect={() => {}}
               placeholder="Category"
               disabled={true}
-              isLoading={modalState.isLoading}
+              isLoading={isLoading}
             />
 
             {ticket?.task_sub_category_name && (
@@ -208,18 +193,19 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
                 onSelect={() => {}}
                 placeholder="Subcategory"
                 disabled={true}
-                isLoading={modalState.isLoading}
+                isLoading={isLoading}
               />
             )}
 
             <TextInputField
-              label="Remark"
+              label="Description"
               value={formState.description}
               onChangeText={(text) => setFormState((prev) => ({ ...prev, description: text }))}
               placeholder="Enter ticket description"
               multiline
               numberOfLines={5}
-              editable={!modalState.isLoading}
+              editable={!isLoading}
+              errorMessage={fieldErrors.description}
             />
 
             <FileUploadField
@@ -228,33 +214,40 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
               fileName={formState.fileName}
               onPick={pickDocument}
               onRemove={removeFile}
-              isLoading={modalState.isLoading}
+              isLoading={isLoading}
               hadAttachment={formState.hadAttachment}
               isEditMode={true}
             />
           </ScrollView>
 
           <TouchableOpacity
-            style={[styles.saveTicketButton, modalState.isLoading && styles.disabledButton]}
+            style={[styles.saveTicketButton, isLoading && styles.disabledButton]}
             onPress={handleSubmit}
-            disabled={modalState.isLoading}
+            disabled={isLoading}
           >
             <Text style={styles.saveTicketButtonText}>Update Ticket</Text>
           </TouchableOpacity>
+
         </KeyboardAvoidingView>
       </Modal>
 
       <SuccessModal
-        visible={modalState.successVisible}
+        visible={successVisible}
         message="Ticket updated successfully!"
         onClose={handleSuccessClose}
+        onAutoClose={() => {
+          setSuccessVisible(false);
+          onClose()
+        }}
+        autoCloseDelay={3000}
+
       />
       <ErrorModal
-        visible={modalState.errorVisible}
-        message={modalState.errorMessage}
-        onClose={() => setModalState((prev) => ({ ...prev, errorVisible: false }))}
-      />
-      <Loader visible={modalState.isLoading} message="Updating ticket..." />
+        visible={errorVisible}
+        message={errorMessage}
+        onClose={() => setErrorVisible(false)}
+      /> 
+      <Loader visible={isLoading} message="Updating ticket..." />
     </>
   );
 };

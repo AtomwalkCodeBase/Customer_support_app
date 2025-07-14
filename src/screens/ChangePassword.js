@@ -3,10 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, E
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from "expo-router";
 import { MaterialIcons } from '@expo/vector-icons';
-import HeaderComponent from './HeaderComponent';
+import HeaderComponent from '../components/HeaderComponent';
 import { setUserPinView } from '../services/productServices';
 import { colors } from '../Styles/appStyle';
-import { ErrorModal, Loader, SuccessModal } from '../components/Modals';
+import { ErrorModal, SuccessModal } from '../components/Modals';
+import Loader from '../components/Loader';
 
 const ResetPasswordScreen = () => {
   const [oldPin, setOldPin] = useState('');
@@ -98,7 +99,7 @@ const ResetPasswordScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.container}>
             <View style={styles.headerSection}>
               <MaterialIcons name="lock" size={48} color={colors.primary} />
