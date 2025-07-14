@@ -41,7 +41,7 @@ const FilePicker = ({
         </View>
       ) : (
         <Text style={styles.noAttachmentText}>
-          {isEditMode && hadAttachment ? "Image cleared" : "No image attached"}
+          {isEditMode && hadAttachment ? "No Image found" : "No image attached"}
         </Text>
       )}
       <TouchableOpacity

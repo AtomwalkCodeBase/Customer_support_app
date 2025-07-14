@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../Styles/appStyle';
 
 const DropdownPicker = ({
   label,
@@ -18,6 +19,7 @@ const DropdownPicker = ({
   placeholder,
   disabled,
   isLoading,
+  errorMessage
 }) => {
   const [showPicker, setShowPicker] = React.useState(false);
 
@@ -64,6 +66,11 @@ const DropdownPicker = ({
             <MaterialIcons name="arrow-drop-down" size={24} color="#888" />
           )}
         </TouchableOpacity>
+        {errorMessage && (
+        <Text style={{ marginTop: 7, color: colors.error, fontSize: 12 }}>
+          {errorMessage}
+        </Text>
+      )}
       </View>
 
       <Modal

@@ -18,7 +18,15 @@ import { Feather } from '@expo/vector-icons';
  * @param {function} onClose - Function to call when modal is closed
  * @param {string} buttonText - Text for the action button (optional)
  */
-export const SuccessModal = ({ visible, message, onClose, buttonText = "OK" }) => {
+export const SuccessModal = ({ visible, message, onClose,onAutoClose, autoCloseDelay = 3000,  buttonText = "OK" }) => {
+    useEffect(() => {
+    if (visible && onAutoClose) {
+      const timer = setTimeout(() => {
+        onAutoClose();
+      }, autoCloseDelay);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, onAutoClose, autoCloseDelay]);
   return (
     <Modal
       visible={visible}
