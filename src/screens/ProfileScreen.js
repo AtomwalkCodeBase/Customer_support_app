@@ -161,7 +161,7 @@ const ProfileScreen = () => {
               accessibilityLabel="Update Pin"
               style={styles.actionButtonSmall}
             >
-              <MaterialIcons name="lock" size={24} color={colors.error} />
+              <MaterialIcons name="lock" size={24} color={colors.primary} />
             </TouchableOpacity>
             </View>
           </View>
@@ -384,9 +384,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   badgeText: {
-    color: colors.primary,
+    color: colors.error,
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: 'bold',
+
   },
   sectionContainer: {
     marginTop: 16,

@@ -6,7 +6,7 @@ import Constants from "expo-constants";
 export const colors = {
   // Brand & Primary
   primary: '#FF6B6B',
-  primaryTransparent: '#ff550033',
+  primaryTransparent: '#ff550016',
 
   // Text
   textPrimary: '#333',
