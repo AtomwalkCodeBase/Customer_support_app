@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import {
   StyleSheet,
   Text,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import TicketList from "../components/TicketList";
 import { getFilterOptions, filterTickets } from "../utils/filterUtils";
 import Loader from "../components/Loader";
 import { AppContext } from "../../context/AppContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TicketListScreen() {
   const { tickets, setTickets, categories, loadings, setLoading, error, setError, fetchTasks, fetchTaskCategories, clearError } = useContext(TaskContext);
@@ -41,11 +41,22 @@ export default function TicketListScreen() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    fetchTaskCategories();
-    fetchTasks();
-    fetchCustomerDetails();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      await Promise.all([
+        fetchTaskCategories(),
+        fetchTasks(),
+        fetchCustomerDetails()
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   const onRefresh = async () => {
   try {
@@ -213,6 +224,7 @@ export default function TicketListScreen() {
             tickets={filteredTickets}
             onView={handleViewTicket}
             onEdit={handleEditTicket}
+            hasFilters={filterTickets}
             // onCreate={() => {
             //   setSelectedTicket(null);
             //   setIsEditMode(false);
@@ -275,7 +287,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 18,
   },
   modernSectionHeader: {},
   sectionTitle: {

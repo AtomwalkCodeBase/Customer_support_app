@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 
 const EmptyState = ({ hasFilters, onCreatePress }) => {
+
+  console.log("hasFilters", hasFilters)
   return (
     <View style={styles.emptyContainer}>
       <Ionicons name="document-text-outline" size={60} color="#FF6B6B" />

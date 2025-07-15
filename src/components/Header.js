@@ -11,6 +11,7 @@ import {
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { getProfileInfo } from '../services/authServices';
+import { useRouter } from 'expo-router';
 
 const Header = ({
   profile,
@@ -21,6 +22,13 @@ const Header = ({
   onFilterPress,
   loading = false, // New prop to control skeleton loader
 }) => {
+  const router = useRouter();
+
+  const handleProfile = () => {
+    router.push({
+      pathname: "/profile",
+    })
+  }
   // Shimmer animation setup
   const shimmerAnim = useState(new Animated.Value(0))[0];
 
@@ -111,15 +119,11 @@ const Header = ({
     );
   }
 
-    const handleClearSearch = () => {
-    setSearchText('');
-    onSearch("");
-  };
 
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity style={styles.userInfo} onPress={handleProfile}>
           <Image style={styles.avatar} source={{ uri: profile?.image }} />
           <View style={styles.userText}>
             <Text style={styles.greeting}>Hello,</Text>
@@ -128,7 +132,7 @@ const Header = ({
               {profile?.name}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         
       </View>

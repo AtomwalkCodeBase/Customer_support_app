@@ -106,14 +106,14 @@ const FilterBar = ({
 
 const styles = StyleSheet.create({
   modernSearchContainer: {
-    marginBottom: 18,
+    marginBottom: 12,
     padding: 2,
   },
   modernSearchBar: {
     backgroundColor: colors.background,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 6,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   modernFilterSection: {
-    marginBottom: 18,
+    marginBottom: 12,
   },
   filterTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   modernFilters: {
     flexDirection: "row",

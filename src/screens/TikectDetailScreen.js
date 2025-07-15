@@ -6,13 +6,15 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+  // SafeAreaView,
   StatusBar,
   Linking
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import FeedbackSection from '../components/FeedbackSection';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import HeaderComponent from '../components/HeaderComponent';
 
 // Reusable component for info items
 const InfoItem = ({ icon, label, value, onPress, isLink }) => {
@@ -148,15 +150,10 @@ const TicketDetailScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#FF6B6B" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ticket Details</Text>
-        <TouchableOpacity  style={styles.editButton}>
-          {/* <Feather name="edit" size={20} color="white" /> */}
-        </TouchableOpacity>
-      </View>
+     <HeaderComponent
+            headerTitle="Ticket Details" 
+            onBackPress={handleBack}
+          />
 
       <ScrollView style={styles.contentContainer}>
         {/* Ticket ID and Type Section */}

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -12,6 +12,7 @@ import Constants from 'expo-constants';
 import HeaderComponent from '../components/HeaderComponent';
 import Loader from '../components/Loader';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
