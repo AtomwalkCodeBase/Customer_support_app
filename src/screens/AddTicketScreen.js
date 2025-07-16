@@ -27,7 +27,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     mainCategory: null, // { id, name } or null
     subCategory: null, // { id, name } or null
     description: '',
-    file: null,
+    fileUri: null,
+    fileName: '',
+    fileMimeType: '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +85,9 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
       mainCategory: null,
       subCategory: null,
       description: '',
-      file: null,
+      fileUri: null,
+      fileName: '',
+      fileMimeType: '',
     });
     setHasSubCategories(false);
     setFieldErrors({}); // Clear field errors
@@ -125,12 +129,12 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
         formData.append('task_sub_category_id', formState.subCategory.id.toString());
       }
 
-      if (formState.file) {
-        const fileExtension = formState.file.name.split('.').pop() || 'jpg';
+      if (formState.fileUri) {
+        const fileExtension = formState.fileName?.split('.').pop() || 'jpg';
         formData.append('uploaded_file', {
-          uri: Platform.OS === 'ios' ? formState.file.uri.replace('file://', '') : formState.file.uri,
-          name: formState.file.name || `attachment.${fileExtension}`,
-          type: formState.file.mimeType || `image/${fileExtension}`,
+          uri: Platform.OS === 'ios' ? formState.fileUri.replace('file://', '') : formState.fileUri,
+          name: formState.fileName || `attachment.${fileExtension}`,
+          type: formState.fileMimeType || `image/${fileExtension}`,
         });
       }
 
@@ -172,28 +176,6 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
     resetForm();
     setFieldErrors({});
     onClose();
-  };
-
-  // Pick image
-  const pickDocument = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'image/*',
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets && result.assets[0]) {
-        setFormState({ ...formState, file: result.assets[0] });
-      }
-    } catch (error) {
-    setErrorMessage('Failed to pick image');
-    setErrorVisible(true);
-    }
-  };
-
-  // Remove image
-  const removeFile = () => {
-    setFormState({ ...formState, file: null });
   };
 
   return (
@@ -245,15 +227,28 @@ const AddTicketScreen = ({ visible, onClose, onSave }) => {
             />
 
             <FileUploadField
-              label="Image"
-              fileUri={formState.file?.uri}
-              fileName={formState.file?.name}
-              onPick={pickDocument}
-              onRemove={removeFile}
-              isLoading={isLoading}
-              hadAttachment={false}
-              isEditMode={false}
-            />
+                label="Image"
+                fileUri={formState.fileUri}
+                fileName={formState.fileName}
+                onFileChange={({ uri, name, mimeType }) => {
+                  console.log('onFileChange', uri, name, mimeType);
+                  setFormState((prev) => ({
+                    ...prev,
+                    fileUri: uri,
+                    fileName: name,
+                    fileMimeType: mimeType,
+                  }));
+                }}
+                onRemove={() => setFormState((prev) => ({
+                  ...prev,
+                  fileUri: null,
+                  fileName: '',
+                  fileMimeType: '',
+                }))}
+                isLoading={isLoading}
+                hadAttachment={false}
+                isEditMode={false}
+              />
           </ScrollView>
 
           <TouchableOpacity

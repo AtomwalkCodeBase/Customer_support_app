@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from "expo-router";
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { setUserPinView } from '../services/productServices';
 import { colors } from '../Styles/appStyle';
 import { ErrorModal, SuccessModal } from '../components/Modals';
 import Loader from '../components/Loader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ResetPasswordScreen = () => {
   const [oldPin, setOldPin] = useState('');

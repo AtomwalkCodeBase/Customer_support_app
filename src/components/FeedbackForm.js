@@ -203,6 +203,11 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
         >
           <TouchableWithoutFeedback onPress={dismissKeyboard}>
             <View style={styles.modalOverlay}>
+              <TouchableOpacity
+                style={StyleSheet.absoluteFill}
+                activeOpacity={1}
+                onPress={onClose}
+              />
               <View style={styles.modalContainer}>
                 <ScrollView
                   contentContainerStyle={styles.scrollContent}
@@ -271,7 +276,12 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
                     label="Image"
                     fileUri={fileUri}
                     fileName={fileName}
-                    onPick={pickDocument}
+                    onFileChange={({ uri, name, mimeType }) => {
+                      setFileUri(uri);
+                      setFileName(name);
+                      setFileMimeType(mimeType);
+                      setHadAttachment(true);
+                    }}
                     onRemove={removeFile}
                     isLoading={isLoading}
                     hadAttachment={hadAttachment}

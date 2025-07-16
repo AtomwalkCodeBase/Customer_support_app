@@ -15,6 +15,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import FeedbackSection from '../components/FeedbackSection';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HeaderComponent from '../components/HeaderComponent';
+import ImagePreviewModal from '../components/ImagePreviewModal';
 
 // Reusable component for info items
 const InfoItem = ({ icon, label, value, onPress, isLink }) => {
@@ -135,6 +136,7 @@ const TicketDetailScreen = () => {
 	const { params } = useLocalSearchParams(); 
 	const ticket = JSON.parse(params); 
   const navigation = useNavigation();
+  const [imagePreview, setImagePreview] = useState(false)
 
   const handleBack = () => {
     navigation.goBack();
@@ -203,11 +205,13 @@ const TicketDetailScreen = () => {
             </View>
             <View style={{ justifyContent: "center", alignItems: "center"}}>
             {ticket.ref_file ? (
+              <TouchableOpacity onPress={()=> setImagePreview(true)}>
               <Image
                 source={{ uri: ticket.ref_file }}
                 style={{ width: 120, height: 120, borderRadius: 8, marginBottom: 10 }}
                 resizeMode="cover"
               />
+              </TouchableOpacity>
             ) : (
               <Text style={{ color: '#888' }}>No image available</Text>
             )}
@@ -219,7 +223,7 @@ const TicketDetailScreen = () => {
             onSubmitFeedback={handleFeedbackSubmit}
           />
               </ScrollView>
-
+        <ImagePreviewModal ImagePreviewModal={imagePreview} previewImage={ ticket.ref_file} setImagePreview={setImagePreview} />
     </SafeAreaView>
   );
 };

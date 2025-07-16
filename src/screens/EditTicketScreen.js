@@ -212,7 +212,9 @@ const EditTicketScreen = ({ visible, onClose, onSave, ticket }) => {
               label="Image"
               fileUri={formState.fileUri}
               fileName={formState.fileName}
-              onPick={pickDocument}
+              onFileChange={({ uri, name, mimeType }) => {
+                setFormState({ ...formState, fileUri: uri, fileName: name, fileMimeType: mimeType });
+              }}
               onRemove={removeFile}
               isLoading={isLoading}
               hadAttachment={formState.hadAttachment}
