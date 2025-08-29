@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView, StatusBar } from 'react-native';
+import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,8 +11,6 @@ import { getCustomerDetailList } from '../services/productServices';
 import Constants from 'expo-constants';
 import HeaderComponent from '../components/HeaderComponent';
 import Loader from '../components/Loader';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -124,7 +122,7 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+      {/* <StatusBar barStyle="light-content" backgroundColor={colors.primary} /> */}
       <HeaderComponent
         headerTitle="Profile" 
         onBackPress={handleBack} 
@@ -153,7 +151,7 @@ const ProfileScreen = () => {
               accessibilityLabel="Logout"
               style={styles.actionButtonSmall}
             >
-              <MaterialIcons name="logout" size={24} color={colors.error} />
+              <MaterialCommunityIcons name="exit-run" size={24} color={colors.error} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -255,13 +253,13 @@ const ProfileScreen = () => {
             {/* Logout */}
             <TouchableOpacity style={styles.optionItem} onPress={() => setIsLogoutModalVisible(true)}>
               <View style={[styles.optionIconContainer, { backgroundColor: colors.errorTransparent }]}>
-                <MaterialIcons name="logout" size={22} color={colors.error} />
+               <MaterialCommunityIcons name="exit-run" size={22} color={colors.error} />
               </View>
               <View style={styles.optionTextContainer}>
                 <Text style={[styles.optionText, { color: colors.error }]}>Logout</Text>
                 <Text style={styles.optionDescription}>Sign out from your account</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
+              {/* <MaterialCommunityIcons name="exit-run" size={24} color={colors.textSecondary} /> */}
             </TouchableOpacity>
           </View>
         </View>
@@ -302,6 +300,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundDark,
+    marginTop: StatusBar.currentHeight,
   },
   header: {
     backgroundColor: colors.primary,

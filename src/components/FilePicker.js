@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image, Modal, Alert } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
 import ImagePreviewModal from "./ImagePreviewModal";
+import { colors } from "../Styles/appStyle";
 
 const FilePicker = ({
   label,
@@ -154,15 +155,17 @@ const FilePicker = ({
         onRequestClose={closePickerModal}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: 'white', borderRadius: 12, padding: 24, width: 280 }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 12, padding: 28, width: 280 }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Select Image Source</Text>
-            <TouchableOpacity style={{ marginBottom: 16 }} onPress={handleCameraCapture}>
+            <TouchableOpacity style={{ marginBottom: 18, flexDirection: "row", gap: 10, alignItems: "center" }} onPress={handleCameraCapture}>
+              <Feather name="camera" size={24} color={colors.primary} />
               <Text style={{ fontSize: 16 }}>Take Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ marginBottom: 16 }} onPress={handleFileSelect}>
+            <TouchableOpacity style={{  marginBottom: 18, flexDirection: "row", gap: 10, alignItems: "center"  }} onPress={handleFileSelect}>
+              <MaterialIcons name="photo-library" size={24} color={colors.primary} />
               <Text style={{ fontSize: 16 }}>Choose from Library</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={closePickerModal}>
+            <TouchableOpacity onPress={closePickerModal} style={{alignItems: "flex-end", }}>
               <Text style={{ fontSize: 16, color: '#FF6B6B' }}>Cancel</Text>
             </TouchableOpacity>
           </View>

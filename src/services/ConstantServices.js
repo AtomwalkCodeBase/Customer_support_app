@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const getDbName = async () => {
   let dbData = await AsyncStorage.getItem('dbName');
-  console.log("Current dbName:", dbData);
+  // console.log("Current dbName:", dbData);
   return dbData
 };
 // const localhost = "https://www.atomwalk.com"
