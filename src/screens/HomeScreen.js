@@ -282,7 +282,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundDark,
-    marginTop: StatusBar.currentHeight,
   },
   statsGrid: {
     flexDirection: "row",

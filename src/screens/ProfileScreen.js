@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView } from 'react-native';
 import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -300,7 +300,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.backgroundDark,
-    marginTop: StatusBar.currentHeight,
   },
   header: {
     backgroundColor: colors.primary,

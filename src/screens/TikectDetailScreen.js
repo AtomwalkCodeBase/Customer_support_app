@@ -148,8 +148,7 @@ const TicketDetailScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B6B" />
+    <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
       
       {/* Header */}
      <HeaderComponent
