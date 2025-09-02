@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, View, Modal, TouchableOpacity, TextInput, Animated, Easing, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
 import FileUploadField from './FilePicker';
 import { ErrorModal, Loader, SuccessModal } from './Modals';
 import { addCustomerTicket } from '../services/productServices';
@@ -60,26 +59,6 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
     scaleAnims.forEach(anim => anim.setValue(1));
   };
 
-  const pickDocument = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'image/*',
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets && result.assets[0]) {
-        const file = result.assets[0];
-        setFileUri(file.uri);
-        setFileName(file.name || 'attachment.jpg');
-        setFileMimeType(file.mimeType || 'image/jpeg');
-      }
-    } catch (error) {
-      console.log('DocumentPicker error:', error);
-      setErrorMessage('Failed to pick image');
-      setErrorVisible(true);
-    }
-  };
-
   const removeFile = () => {
     setFileUri(null);
     setFileName('');
@@ -118,7 +97,6 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
     }).start();
 
     setSelectedRating(index);
-    console.log("index", index + 1);
     
   };
 
@@ -157,11 +135,8 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
 		});
       }
 
-      // Call the addCustomerTicket API
        const res = await addCustomerTicket(formData);
-	  console.log("FeedbackForm", res.data);
 
-      // Notify parent component of successful submission
       onSubmit({
         ticket_id: ticket.id,
         remarks,

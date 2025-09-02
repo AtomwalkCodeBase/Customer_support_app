@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { addEmpLeave, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, userLoginURL, userTaskListURL, getTaskCategoryURL, getTaskURL, addCustomerTicketURL, getCustomerDetailListURL, getCustomerListURL, setUserPinURL, forgetCustomerPinURL } from "./ConstantServices";
+import { userLoginURL, userTaskListURL, getTaskCategoryURL, addCustomerTicketURL, getCustomerDetailListURL, setUserPinURL, forgetCustomerPinURL } from "./ConstantServices";
 import { authAxios, authAxiosFilePost, authAxiosPost, authAxiosPosts, publicAxiosRequest } from "./HttpMethod";
 
 
@@ -80,7 +80,7 @@ export async function setUserPinView(o_pin, n_pin) {
 }  
 
   export async function forgetCustomerPinView(data) {
-    console.log("Data to be sent--->", data);
+    // console.log("Data to be sent--->", data);
     const url = await forgetCustomerPinURL();
     return publicAxiosRequest.post(url, data);
 }

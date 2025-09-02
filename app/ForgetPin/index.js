@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components/native";
-import { View, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, SafeAreaView, ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform, } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import Logos from "../../assets/images/Atom_walk_logo.jpg";
-import { useRouter } from "expo-router";
-import { getDBListInfo } from "../../src/services/authServices";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Icon from "react-native-vector-icons/Ionicons";
-import { forgetCustomerPinView } from "../../src/services/productServices";
-import CompanyDropdown from "../../src/components/CompanyDropdown";
-import { Loader, SuccessModal } from "../../src/components/Modals";
+import React, { useContext, useEffect, useState } from 'react';
+import styled from 'styled-components/native';
+import { View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, SafeAreaView, 
+  ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import Logos from '../../assets/images/Atom_walk_logo.jpg';
+import { useRouter } from 'expo-router';
+import { getDBListInfo } from '../../src/services/authServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { publicAxiosRequest } from '../../src/services/HttpMethod';
+import Loader from '../../src/components/Loader';
+import { forgetCustomerPinView} from '../../src/services/productServices';
+import { AppContext } from '../../context/AppContext';
 import { colors } from "../../src/Styles/appStyle";
+import CompanyDropdown from '../../src/components/CompanyDropdown';
+import { SuccessModal } from '../../src/components/Modals';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 // Responsive scaling functions
 const scaleWidth = (size) => (width / 375) * size;
@@ -21,17 +24,16 @@ const scaleHeight = (size) => (height / 812) * size;
 
 const ResetPinScreen = () => {
   const router = useRouter();
-  const [mobileNumberOrEmpId, setMobileNumberOrEmpId] = useState("");
-  const [pin, setPin] = useState('');
-  const [dbName, setDBName] = useState("");
+  const [mobileNumberOrEmpId, setMobileNumberOrEmpId] = useState('');
+  const [dbName, setDBName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [companyError, setCompanyError] = useState("");
+  const [companyError, setCompanyError] = useState('');
   const [dbList, setDbList] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [showPassField, setShowPassField] = useState(false);
+const [successMessage, setSuccessMessage] = useState('');
+
+const {completLogout} = useContext(AppContext);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -39,107 +41,109 @@ const ResetPinScreen = () => {
   }, []);
 
   const fetchDbList = async () => {
-    setLoading(true); // Show loader when starting the fetch
-
-    try {
-      const DBData = await getDBListInfo();
-      setDbList(DBData.data || []);
-
-      if (DBData.data?.length === 1) {
-        const firstCompany = DBData.data[0];
-        const defaultDbName = firstCompany.name.replace(/^SD_/, "");
-
-        setSelectedCompany({
-          label: firstCompany.ref_cust_name,
-          value: firstCompany.ref_cust_name,
-        });
-        setDBName(defaultDbName);
-      }
-    } catch (error) {
-      console.error("DB List loading error:", error);
-      Alert.alert("Error", "Failed to load company list. Please try again.");
-    } finally {
-      setLoading(false); // Hide loader when done (success or error)
+  setLoading(true); // Show loader when starting the fetch
+  
+  try {
+    const DBData = await getDBListInfo();
+    setDbList(DBData.data || []);
+    
+    if (DBData.data?.length === 1) {
+      const firstCompany = DBData.data[0];
+      const defaultDbName = firstCompany.name.replace(/^SD_/, '');
+      
+      setSelectedCompany({
+        label: firstCompany.ref_cust_name,
+        value: firstCompany.ref_cust_name
+      });
+      setDBName(defaultDbName);
     }
-  };
+  } catch (error) {
+    console.error('DB List loading error:', error);
+    Alert.alert('Error', 'Failed to load company list. Please try again.');
+  } finally {
+    setLoading(false); // Hide loader when done (success or error)
+  }
+};
 
   const handleCompanyChange = async (item) => {
     if (!item) return;
 
     setSelectedCompany(item);
-    const selected = dbList.find((c) => c.ref_cust_name === item.value);
-
+    const selected = dbList.find(c => c.ref_cust_name === item.value);
+    
     if (selected) {
-      const newDbName = selected.name.replace(/^SD_/, "");
+      const newDbName = selected.name.replace(/^SD_/, ''); 
       setDBName(newDbName);
-      await AsyncStorage.setItem("dbName", newDbName);
+      await AsyncStorage.setItem('dbName', newDbName);
     }
-
-    setCompanyError("");
+    
+    setCompanyError('');
   };
 
   const validateInput = () => {
     if (!selectedCompany) {
-      setCompanyError("Please select your company");
+      setCompanyError('Please select your company');
       return false;
     }
-    if (!mobileNumberOrEmpId || mobileNumberOrEmpId.length < 10) {
+     if (!mobileNumberOrEmpId || mobileNumberOrEmpId.length < 10) {
       setErrorMessage("Please enter valid Mobile Number");
       return false;
     }
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateInput()) return;
+  
 
-    setLoading(true);
-    Keyboard.dismiss(); // Hide keyboard when submitting
+ const handleSubmit = async () => {
+  if (!validateInput()) return;
 
-    try {
-      const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
+  setLoading(true);
+  Keyboard.dismiss(); // Hide keyboard when submitting
 
-      const payload = isMobileNumber
-        ? { mobile_number: mobileNumberOrEmpId, dbName: dbName }
-        : { emp_id: mobileNumberOrEmpId, dbName: dbName };
+  try {
+    const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
+    
+    const payload = isMobileNumber 
+      ? { mobile_number: mobileNumberOrEmpId, dbName: dbName }
+      : { emp_id: mobileNumberOrEmpId, dbName: dbName };
 
-      const response = await forgetCustomerPinView(payload);
-
-      if (response && response.status === 200) {
-        // Clear userPin from AsyncStorage on success
-        // await AsyncStorage.removeItem("userPin");
-        // Set success message and show modal
-        setSuccessMessage(
-          "Your PIN reset request has been submitted successfully. " +
-            "Please check your registered email & login with new PIN."
-        );
-        setIsSuccessModalVisible(true);
-
-       setTimeout(() => {
-         router.replace({
-           pathname: "AuthScreen",
-           params: { backTohome: "true" }
-         });
-       }, 3000);
-      } else {
-        throw new Error(
-          response?.data?.message || "Failed to process your request"
-        );
-      }
-    } catch (error) {
-      console.error("Reset PIN error:", error.message);
-      Alert.alert(
-        "Unable to proceed",
-        "Please contact your manager to reset your PIN."
+    const response = await forgetCustomerPinView(payload);
+    
+    if (response && response.status === 200) {
+      // Clear userPin from AsyncStorage on success
+      await AsyncStorage.removeItem('userPin');
+      
+      // Set success message and show modal
+      setSuccessMessage(
+        'Your PIN reset request has been submitted successfully. ' +
+        'Please check your registered email & login with new PIN.'
       );
-    } finally {
-      setLoading(false);
+      setIsSuccessModalVisible(true);
+
+      setTimeout(() => {
+        //  router.replace({
+        //    pathname: "AuthScreen",
+        //    params: { backTohome: "true" }
+        //  });
+        completLogout();
+       }, 3000);
+       
+    } else {
+      throw new Error(response?.data?.message || 'Failed to process your request');
     }
-  };
+  } catch (error) {
+    console.error('Reset PIN error:', error.message);
+    Alert.alert(
+      'Unable to proceed', "Please contact your manager to reset your PIN."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
-    <SafeAreaContainer>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+    <SafeAreaContainer edges={["left", "right", "bottom"]}>
       <Container>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Header>
@@ -152,11 +156,7 @@ const ResetPinScreen = () => {
                   <Logo source={Logos} />
                 ) : (
                   <View style={styles.companyPlaceholder}>
-                    <MaterialIcons
-                      name="business"
-                      size={scaleWidth(40)}
-                      color="#fff"
-                    />
+                    <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
                   </View>
                 )}
               </View>
@@ -166,22 +166,22 @@ const ResetPinScreen = () => {
               </TitleContainer>
             </LinearGradient>
           </Header>
-
+          
           <Content>
             <Card>
               {dbList.length > 0 && (
                 <CompanyDropdown
                   label="Select Your Company"
-                  data={dbList.map((company) => ({
+                  data={dbList.map(company => ({
                     label: company.ref_cust_name,
-                    value: company.ref_cust_name,
+                    value: company.ref_cust_name
                   }))}
                   value={selectedCompany}
                   setValue={handleCompanyChange}
                   error={companyError}
                 />
               )}
-
+              
               <InputLabel>Enter your Mobile number</InputLabel>
               <InputWrapper>
                 <MaterialIcons name="person" size={20} color="#6c757d" />
@@ -196,16 +196,14 @@ const ResetPinScreen = () => {
               </InputWrapper>
               {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
 
-              <SubmitButton
+              <SubmitButton 
                 onPress={handleSubmit}
                 disabled={!mobileNumberOrEmpId || !selectedCompany}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <SubmitButtonText>
-                  Send Request
-                  </SubmitButtonText>
+                  <SubmitButtonText>Send Request</SubmitButtonText>
                 )}
               </SubmitButton>
 
@@ -215,39 +213,34 @@ const ResetPinScreen = () => {
             </Card>
           </Content>
           <View style={styles.securityNote}>
-            <Icon
-              name="shield-checkmark-outline"
-              size={20}
-              color="#FFA726"
-              style={styles.noteIcon}
-            />
-            <View style={styles.noteContent}>
-              <Text style={styles.noteTitle}>Security Notice</Text>
-              <Text style={styles.noteText}>
-                <Text style={styles.bulletPoint}>• </Text>
-                Never share your PIN with anyone
-                {"\n"}
-                <Text style={styles.bulletPoint}>• </Text>
-                Please check your resistered mail-id, login with newly recived
-                mail-id (Login with PIN - Logout)
-              </Text>
-            </View>
-          </View>
+                          <Ionicons name="shield-checkmark-outline" size={20} color="#FFA726" style={styles.noteIcon} />
+                              <View style={styles.noteContent}>
+                                  <Text style={styles.noteTitle}>Security Notice</Text>
+                                  <Text style={styles.noteText}>
+                                      <Text style={styles.bulletPoint}>• </Text>
+                                      Never share your PIN with anyone
+                                      {'\n'}
+                                      <Text style={styles.bulletPoint}>• </Text>
+                                      Please check your resistered mail-id, login with newly recived mail-id
+                                      (Login with PIN - Logout)
+                                  </Text>
+                              </View>
+                          </View>
         </ScrollView>
       </Container>
-
-      <Loader
-        visible={loading}
+      
+      <Loader 
+        visible={loading} 
         onTimeout={() => {
           setLoading(false);
-          Alert.alert("Timeout", "Request timed out. Please try again.");
+          Alert.alert('Timeout', 'Request timed out. Please try again.');
         }}
       />
       <SuccessModal
         visible={isSuccessModalVisible}
         onClose={() => {
           setIsSuccessModalVisible(false);
-          router.back(); // Changed from replace('/login') to back()
+          completLogout(); // Changed from replace('/login') to back()
         }}
         message={successMessage}
       />
@@ -260,59 +253,56 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   headerGradient: {
-    paddingTop:
-      Platform.OS === "android"
-        ? StatusBar.currentHeight + scaleHeight(20)
-        : scaleHeight(40),
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + scaleHeight(20) : scaleHeight(40),
     paddingBottom: scaleHeight(40),
     paddingHorizontal: scaleWidth(20),
-    alignItems: "center",
+    alignItems: 'center',
     borderBottomLeftRadius: scaleWidth(30),
     borderBottomRightRadius: scaleWidth(30),
   },
   logoContainer: {
     marginBottom: scaleHeight(20),
     borderRadius: scaleWidth(10),
-    overflow: "hidden",
+    overflow: 'hidden'
   },
   companyPlaceholder: {
     width: scaleWidth(80),
     height: scaleWidth(80),
     borderRadius: scaleWidth(40),
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   securityNote: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "rgba(255, 167, 38, 0.1)", // 10% opacity of warning color
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(255, 167, 38, 0.1)', // 10% opacity of warning color
     padding: 16,
     borderRadius: 8,
     marginTop: 16,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: "#FFA726",
-    width: "100%",
-  },
-  noteIcon: {
+    borderLeftColor: '#FFA726',
+    width: '100%',
+},
+noteIcon: {
     marginRight: 12,
     marginTop: 3,
-  },
-  noteContent: {
+},
+noteContent: {
     flex: 1,
-  },
-  noteTitle: {
+},
+noteTitle: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#FFA726",
+    fontWeight: '600',
+    color: '#FFA726',
     marginBottom: 6,
-  },
-  noteText: {
+},
+noteText: {
     fontSize: 13,
-    color: "#757575",
+    color: '#757575',
     lineHeight: 20,
-  },
+},
 });
 
 const SafeAreaContainer = styled(SafeAreaView)`

@@ -43,110 +43,172 @@ const AppProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
-    const login = async (username, password) => {
-      console.log(username,password,"data")
+    const login = async (username, password, dbName) => {
         setIsLoading(true);
+        setIsError({visible: false, message: null});
+
         if (!isConnected) {
             setIsLoading(false);
+            setIsError({visible: true, message: 'No internet connection. Please check your network.'});
             return;
         }
 
         try {
+            // Update dbName if provided
+            if (dbName) {
+                await AsyncStorage.multiSet([
+                    ['dbName', dbName],
+                    ['previousDbName', dbName]
+                ]);
+                setDbName(dbName);
+            }
+
             // Determine if the input is a mobile number (10 digits) or employee ID
             // const isMobileNumber = /^\d{10}$/.test(username);
-            
-            const payload =  
+
+            const payload = 
                 {
                     mobile_number: username,
-                    pin:password ,
-                  }
+                    pin: password,
+                }
                 // : {
                 //     emp_id: username,
                 //     pin: password,
                 //   };
 
-          
-            const url = await userLoginURL();
-            const response = await publicAxiosRequest.post(url, payload, {
-                headers: { 'Content-Type': 'application/json' },
-            });
-          
-          
+            // Call login API correctly with payload
+            const response = await customerLogin(payload);
+
             if (response.status === 200) {
-                const { token, emp_id, e_id } = response.data;
-              await AsyncStorage.setItem('userToken', token);
-              // await AsyncStorage.setItem('empId', emp_id);
-              // await AsyncStorage.setItem('eId', String(e_id));
-              await AsyncStorage.setItem('mobileNumber', username);
-              await AsyncStorage.setItem('userPin', password);
+                const { token, customer_id } = response.data;
+                console.log(response.data);
+
+                // Calculate token expiration date (15 days from now) 
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 15);
+                const expirationDateString = expirationDate.toISOString();
+
+                // Store appropriate identifier based on input type
+                await AsyncStorage.setItem('mobileNumber', username);
+
+                // Store token and expiration date
+                await AsyncStorage.multiSet([
+                    ['userToken', token],
+                    ['tokenExpiration', expirationDateString],
+                    ['Customer_id', String(customer_id)],
+                    ['userPin', password]
+                ]);
+
+                try {
+                    const companyInfoResponse = await getCompanyInfo();
+                    const companyInfo = companyInfoResponse.data;
+                    await AsyncStorage.setItem('companyInfo', JSON.stringify(companyInfo));
+                    setCompanyInfo(companyInfo);
+                } catch (error) {
+                    console.error('Error fetching company info:', error.message);
                 }
 
-                router.replace('/home');
-        } catch (err) {
-            console.log('Login error:', err);
-          }
-          
-        // try {
-        //     if (!username.includes("@")) {
-        //         const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);
-        //         username = userDetailResponse.data.username;
-        //     }
-        //     const res = await publicAxiosRequest.post(loginURL, { username, password });
-        //     const userToken = res.data['key'];
-        //     await AsyncStorage.multiSet([
-        //         ['userToken', userToken],
-        //         ['Password', password],
-        //         ['username', username],
-        //     ]);
-        //     setUserToken(userToken);
-        //     router.replace({ pathname: 'home' });
-        // } catch (err) {
-        //     console.log('Login error:', err);
-        // }
+                setUserToken(token); // Update the token in state
+                // setReload(true);
+                router.replace({ pathname: 'home' });
+            } else {
+                setIsError({visible: true, message:'Invalid credentials'});
+            }
+        } catch (error) {
+            console.error('API call error:', error.response?.data || error.message);
+            if (error.response) {
+                if (error.response.data?.error) {
+                    const errorMessage = error.response.data.error;
 
-        // try {
-        //     const res = await getCompanyInfo();
-        //     const companyInfo = res.data;
-        //     const db_name = companyInfo.db_name.substr(3);
-        //     await AsyncStorage.multiSet([
-        //         ['companyInfo', JSON.stringify(companyInfo)],
-        //         ['dbName', db_name],
-        //     ]);
-        //     setCompanyInfo(companyInfo);
-        //     setDbName(db_name);
-        // } catch (error) {
-        //     console.log('Company Info Fetch Error:', error);
-        // }
+                    // Handle "Wrong Attempt [X]" case
+                    const wrongAttemptMatch = errorMessage.match(/Wrong Attempt \[(\d+)\]/);
+                    if (wrongAttemptMatch) {
+                        const attemptCount = parseInt(wrongAttemptMatch[1]);
 
-        setIsLoading(false);
+                        if (attemptCount >= 6) {
+                            setIsError({visible: true ,message:'Your account has been blocked due to too many failed attempts. Please contact support.'});
+                            return;
+                        } else {
+                            setIsError({visible: true,message:`Incorrect PIN. You have ${6 - attemptCount} attempts remaining before your account gets blocked.`});
+                            return;
+                        }
+                    }
+
+                    // Handle other error messages with brackets
+                    if (errorMessage.includes('Multiple wrong attempt. Employee login is Inactive now.')) {
+                        setIsError({visible: true,message:'Multiple wrong attempts. Your account is now inactive. Please contact respective manager.'});
+                    } else {
+                        setIsError({visible: true, message :errorMessage});
+                    }
+                } else {
+                    setIsError({visible: true, message: 'Invalid credentials. Please try again.'});
+                }
+            } else if (error.request) {
+                setIsError({visible: true, message: 'No response from the server. Please check your connection.'});
+            } else {
+                setIsError({visible: true, message: 'An error occurred. Please try again.'});
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const logout = () => {
+    const logout = async () => {
         setIsLoading(true);
-        AsyncStorage.removeItem('userToken');
-        AsyncStorage.removeItem('companyInfo');
-        // AsyncStorage.removeItem('dbName');
+
+        try {
+            router.replace('PinScreen');
+            await AsyncStorage.multiRemove([
+                'userToken',
+            ]);
+
             setUserToken(null);
-        setCompanyInfo([]);
-        // setDbName(null);
+            setProfile({});
+        } catch (err) {
+            console.error("Logout error:", err);
+        } finally {
             setIsLoading(false);
-        // setError('')
-        router.replace('AuthScreen');
+        }
+    };
+
+    const completLogout = async () => {
+        setIsLoading(true);
+
+        try {
+            router.replace('AuthScreen');
+            await AsyncStorage.multiRemove([
+                'userToken', 'Customer_id', 'tokenExpiration', 'dbName', 'userPin', 'profilename', 'userBiometric', 'mobileNumber'
+            ]);
+
+            setUserToken(null);
+            setProfile({});
+        } catch (err) {
+            console.error("Logout error:", err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const isLoggedIn = async () => {
-            const networkStatus = await checkNetwork();
-            if (!networkStatus) {
-                return;
-            }
+        const networkStatus = await checkNetwork();
+        if (!networkStatus) {
+            return;
+        }
 
         try {
             setIsLoading(true);
             const userToken = await AsyncStorage.getItem('userToken');
-            if (!userToken) {
+            const Dbname = await AsyncStorage.getItem('dbName');
+            if (!userToken && !Dbname) {
                 router.replace('AuthScreen');
                 return;
             }
+
+            if (!userToken) {
+                router.replace('PinScreen'); // You might want to double-check this logic
+                return;
+            }
+
 
             setUserToken(userToken);
 
@@ -154,13 +216,11 @@ const AppProvider = ({ children }) => {
             const [
                 companyInfo,
                 dbName,
-                loginType,
-                identifier
+                userPin
             ] = await Promise.all([
                 AsyncStorage.getItem('companyInfo'),
                 AsyncStorage.getItem('dbName'),
-                AsyncStorage.getItem('loginType'),
-                AsyncStorage.getItem(loginType === 'mobile' ? 'mobileNumber' : 'empId')
+                AsyncStorage.getItem('userPin')
             ]);
 
             if (companyInfo) {
@@ -169,8 +229,14 @@ const AppProvider = ({ children }) => {
             if (dbName) {
                 setDbName(dbName);
             }
+
+
+            if (userPin) {
+                router.replace('PinScreen');
+                // return;
+            }
         } catch (e) {
-            console.log('Login Status Error:', e);
+            console.error('Login Status Error:', e);
         } finally {
             setIsLoading(false);
         }
@@ -197,7 +263,15 @@ const AppProvider = ({ children }) => {
         });
       } finally {
         setIsLoading(false);
-      }
+                }
+            };
+
+    const refreshProfileData = async () => {
+        try {
+            setIsLoading(true);
+        } catch (error) {
+            console.error('Failed to refresh data:', error);
+        }
     };
 
     return (
@@ -212,9 +286,12 @@ const AppProvider = ({ children }) => {
             checkNetwork,
             setIsLoading,
             profile,
-            fetchCustomerDetails,
             isLoading,
-            isError
+            isError,
+            setIsError,
+            completLogout,
+            refreshProfileData ,
+            fetchCustomerDetails     
         }}>
             {children}
             <NetworkErrorModal 
