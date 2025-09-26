@@ -23,7 +23,7 @@ export const TaskProvider = ({ children }) => {
       const res = await getTaskCategory();
       setCategories(res.data || []);
     } catch (err) {
-      console.log("Failed to fetch categories:", err);
+      // console.log("Failed to fetch categories:", err);
       setError({ visible: true, message: "Failed to load categories" });
     }
     setLoading(false);
@@ -42,7 +42,7 @@ export const TaskProvider = ({ children }) => {
 
       setTickets(ticketsData);
     } catch (err) {
-      console.log("Failed to fetch tasks:", err);
+      // console.log("Failed to fetch tasks:", err);
       setError({ visible: true, message: "Failed to load tasks" });
     }
     setTimeout(() => {

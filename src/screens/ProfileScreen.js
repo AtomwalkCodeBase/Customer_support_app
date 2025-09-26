@@ -11,6 +11,7 @@ import { getCustomerDetailList } from '../services/productServices';
 import Constants from 'expo-constants';
 import HeaderComponent from '../components/HeaderComponent';
 import Loader from '../components/Loader';
+import { TaskContext } from '../../context/TaskContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,6 +21,8 @@ const scaleHeight = (size) => (height / 812) * size;
 
 const ProfileScreen = () => {
   const { profile, logout, fetchCustomerDetails } = useContext(AppContext);
+    const { tickets } = useContext(TaskContext);
+  
   const [userPin, setUserPin] = useState(null);
   const [profileImg, setProfileImg] = useState({});
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
@@ -30,6 +33,9 @@ const ProfileScreen = () => {
   const [error, setError] = useState({ visible: false, message: '' });
   const router = useRouter();
   const navigation = useNavigation();
+
+  // const totalTask = Math.max(parseInt(profile.no_of_task || 0) - tickets.length, 0);
+  const totalTickets = tickets.length;
 
   const appVersion = Constants.expoConfig?.version || '0.0.1';
 
@@ -141,7 +147,8 @@ const ProfileScreen = () => {
               </Text>
               <View style={styles.badgeContainer}>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>Tasks: {profile.no_of_task}</Text>
+                  {/* <Text style={styles.badgeText}>Tasks: {totalTask || 0}</Text> */}
+                  <Text style={styles.badgeText}>Tickets: {totalTickets || 0}</Text>
                 </View>
               </View>
             {/* </View> */}
@@ -385,7 +392,6 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 12,
     fontWeight: 'bold',
-
   },
   sectionContainer: {
     marginTop: 16,

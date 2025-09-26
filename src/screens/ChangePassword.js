@@ -91,7 +91,7 @@ const ResetPasswordScreen = () => {
     };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={styles.safeArea} edges={["left", "right",]}>
       <HeaderComponent
         headerTitle="Update Your PIN"
         onBackPress={() => router.back()}

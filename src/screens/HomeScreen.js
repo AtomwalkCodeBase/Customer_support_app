@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
   RefreshControl,
-  SafeAreaView,
+  // SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -23,7 +23,7 @@ import TicketList from "../components/TicketList";
 import { getFilterOptions, filterTickets } from "../utils/filterUtils";
 import Loader from "../components/Loader";
 import { AppContext } from "../../context/AppContext";
-// import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TicketListScreen() {
   const { tickets, setTickets, categories, loadings, setLoading, error, setError, fetchTasks, fetchTaskCategories, clearError } = useContext(TaskContext);
@@ -173,7 +173,7 @@ useEffect(() => {
 
   return (
     <>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["left", "right"]}>
         <Header profile={profile || {}} />
         <ScrollView style={{ marginHorizontal: 16, marginTop: 20 }} showsVerticalScrollIndicator={false}   refreshControl={
     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

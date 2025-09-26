@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   saveTicketButton: {
-    marginVertical: 20,
+    marginVertical: 15,
     marginHorizontal: 15,
     backgroundColor: colors.primary,
     paddingVertical: 15,

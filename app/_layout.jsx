@@ -8,14 +8,9 @@ if (BackHandler && typeof BackHandler.removeEventListener !== 'function') {
   BackHandler.removeEventListener = () => {};
 }
 
-const StatusBarBackground = () => {
-  if (Platform.OS === 'android') {
-    return (
-      <View style={styles.statusBarBackground} />
-    );
-  }
-  return null;
-};
+const StatusBarBackground = () => (
+  <View style={styles.statusBarBackground} />
+);
 
 export default function RootLayout() {
   return (

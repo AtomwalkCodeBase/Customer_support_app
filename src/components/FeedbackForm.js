@@ -146,7 +146,7 @@ export const FeedbackForm = ({ ticket, visible, onClose, onSubmit }) => {
       });
 
       setSuccessVisible(true);
-      console.log('FeedbackForm submitted:', { ticket_id: ticket.id, remarks, fileUri, fileName, fileMimeType });
+      // console.log('FeedbackForm submitted:', { ticket_id: ticket.id, remarks, fileUri, fileName, fileMimeType });
     } catch (error) {
       console.error('Error submitting feedback:', error);
       setErrorMessage('Failed to submit feedback. Please try again.');
