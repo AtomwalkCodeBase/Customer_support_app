@@ -4,7 +4,7 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 import ImagePreviewModal from "./ImagePreviewModal";
 import { colors } from "../Styles/appStyle";
 
@@ -28,80 +28,108 @@ const FilePicker = ({
   const compressImage = async (uri) => {
     let compressQuality = 1;
     const targetSize = 200 * 1024; // 200 KB
-    let compressedImage = await ImageManipulator.manipulateAsync(uri, [], {
-      compress: compressQuality,
-      format: ImageManipulator.SaveFormat.JPEG,
-    });
-    let imageInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-    while (imageInfo.size > targetSize && compressQuality > 0.1) {
-      compressQuality -= 0.1;
-      compressedImage = await ImageManipulator.manipulateAsync(uri, [], {
+
+    let compressedImage = await ImageManipulator.manipulateAsync(
+      uri,
+      [],
+      {
         compress: compressQuality,
         format: ImageManipulator.SaveFormat.JPEG,
-      });
-      imageInfo = await FileSystem.getInfoAsync(compressedImage.uri);
+      }
+    );
+
+    let imageFile = new File(compressedImage.uri);
+    let imageSize = imageFile.size;
+
+    while (imageSize > targetSize && compressQuality > 0.1) {
+      compressQuality -= 0.1;
+
+      compressedImage = await ImageManipulator.manipulateAsync(
+        uri,
+        [],
+        {
+          compress: compressQuality,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+
+      imageFile = new File(compressedImage.uri);
+      imageSize = imageFile.size;
     }
+
     return compressedImage;
   };
 
   const handleCameraCapture = async () => {
     closePickerModal();
     setLoading(true);
+
     try {
       const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-      if (cameraPermission.granted) {
-        let result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          quality: 1,
+
+      if (!cameraPermission.granted) {
+        Alert.alert("Permission Required", "Camera permission is required to capture photos");
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
+
+        const compressedImage = await compressImage(asset.uri);
+
+        onFileChange({
+          uri: compressedImage.uri,
+          name: asset.fileName || "captured_image.jpg",
+          mimeType: asset.mimeType || "image/jpeg",
         });
-        if (!result.canceled && result.assets && result.assets[0]) {
-          const compressedImage = await compressImage(result.assets[0].uri);
-          onFileChange({
-            uri: compressedImage.uri,
-            name: result.assets[0].fileName || "captured_image.jpg",
-            mimeType: result.assets[0].mimeType || "image/jpeg",
-          });
-        }
-      } else {
-        Alert.alert(
-          "Permission Required",
-          "Camera permission is required to capture photos"
-        );
       }
     } catch (error) {
       console.error("Camera error:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleFileSelect = async () => {
     closePickerModal();
     setLoading(true);
+
     try {
-      let result = await DocumentPicker.getDocumentAsync({
+      const result = await DocumentPicker.getDocumentAsync({
         type: ["image/*", "application/pdf"],
         copyToCacheDirectory: true,
       });
-      if (!result.canceled && result.assets && result.assets[0]) {
-        const fileUri = result.assets[0].uri;
-        const fileName = result.assets[0].name;
-        const mimeType = result.assets[0].mimeType || "image/jpeg";
-        let compressedImageUri = fileUri;
-        if (mimeType.startsWith("image/")) {
-          const compressedImage = await compressImage(fileUri);
-          compressedImageUri = compressedImage.uri || compressedImage;
+
+      if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
+
+        let selectedUri = asset.uri;
+
+        if (asset.mimeType?.startsWith("image/")) {
+          const compressedImage = await compressImage(asset.uri);
+          selectedUri = compressedImage.uri;
         }
+
         onFileChange({
-          uri: compressedImageUri,
-          name: fileName,
-          mimeType,
+          uri: selectedUri,
+          name: asset.name,
+          mimeType: asset.mimeType || "image/jpeg",
         });
       }
     } catch (error) {
-      console.error("Error while picking file or compressing:", error);
+      console.error(
+        "Error while picking file or compressing:",
+        error
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -161,11 +189,11 @@ const FilePicker = ({
               <Feather name="camera" size={24} color={colors.primary} />
               <Text style={{ fontSize: 16 }}>Take Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{  marginBottom: 18, flexDirection: "row", gap: 10, alignItems: "center"  }} onPress={handleFileSelect}>
+            <TouchableOpacity style={{ marginBottom: 18, flexDirection: "row", gap: 10, alignItems: "center" }} onPress={handleFileSelect}>
               <MaterialIcons name="photo-library" size={24} color={colors.primary} />
               <Text style={{ fontSize: 16 }}>Choose from Library</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={closePickerModal} style={{alignItems: "flex-end", }}>
+            <TouchableOpacity onPress={closePickerModal} style={{ alignItems: "flex-end", }}>
               <Text style={{ fontSize: 16, color: '#FF6B6B' }}>Cancel</Text>
             </TouchableOpacity>
           </View>

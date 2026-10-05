@@ -269,8 +269,23 @@ const AppProvider = ({ children }) => {
     const refreshProfileData = async () => {
         try {
             setIsLoading(true);
+            const customerId = await AsyncStorage.getItem('Customer_id');
+            if (customerId) {
+                const res = await getCustomerDetailList(customerId);
+                const customer = res.data.find(
+                    (item) => item.id?.toString() === customerId?.toString()
+                );
+                if (customer) {
+                    setProfile(customer);
+                    await AsyncStorage.setItem('profilename', customer.name);
+                }
+            }
+            router.replace({ pathname: 'home' });
         } catch (error) {
             console.error('Failed to refresh data:', error);
+            setIsError({ visible: true, message: 'Unable to process. Please try again.' });
+        } finally {
+            setIsLoading(false);
         }
     };
 

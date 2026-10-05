@@ -1,20 +1,22 @@
 import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components/native';
-import { View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar, SafeAreaView, 
-  ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform } from 'react-native';
+import {
+  View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, StatusBar,
+  ScrollView, Dimensions, Image, Text, Alert, Keyboard, Platform
+} from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logos from '../../assets/images/Atom_walk_logo.jpg';
 import { useRouter } from 'expo-router';
 import { getDBListInfo } from '../../src/services/authServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { publicAxiosRequest } from '../../src/services/HttpMethod';
 import Loader from '../../src/components/Loader';
-import { forgetCustomerPinView} from '../../src/services/productServices';
+import { forgetCustomerPinView } from '../../src/services/productServices';
 import { AppContext } from '../../context/AppContext';
 import { colors } from "../../src/Styles/appStyle";
 import CompanyDropdown from '../../src/components/CompanyDropdown';
 import { SuccessModal } from '../../src/components/Modals';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,9 +33,9 @@ const ResetPinScreen = () => {
   const [dbList, setDbList] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-const {completLogout} = useContext(AppContext);
+  const { completLogout } = useContext(AppContext);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -41,42 +43,42 @@ const {completLogout} = useContext(AppContext);
   }, []);
 
   const fetchDbList = async () => {
-  setLoading(true); // Show loader when starting the fetch
-  
-  try {
-    const DBData = await getDBListInfo();
-    setDbList(DBData.data || []);
-    
-    if (DBData.data?.length === 1) {
-      const firstCompany = DBData.data[0];
-      const defaultDbName = firstCompany.name.replace(/^SD_/, '');
-      
-      setSelectedCompany({
-        label: firstCompany.ref_cust_name,
-        value: firstCompany.ref_cust_name
-      });
-      setDBName(defaultDbName);
+    setLoading(true); // Show loader when starting the fetch
+
+    try {
+      const DBData = await getDBListInfo();
+      setDbList(DBData.data || []);
+
+      if (DBData.data?.length === 1) {
+        const firstCompany = DBData.data[0];
+        const defaultDbName = firstCompany.name.replace(/^SD_/, '');
+
+        setSelectedCompany({
+          label: firstCompany.ref_cust_name,
+          value: firstCompany.ref_cust_name
+        });
+        setDBName(defaultDbName);
+      }
+    } catch (error) {
+      console.error('DB List loading error:', error);
+      Alert.alert('Error', 'Failed to load company list. Please try again.');
+    } finally {
+      setLoading(false); // Hide loader when done (success or error)
     }
-  } catch (error) {
-    console.error('DB List loading error:', error);
-    Alert.alert('Error', 'Failed to load company list. Please try again.');
-  } finally {
-    setLoading(false); // Hide loader when done (success or error)
-  }
-};
+  };
 
   const handleCompanyChange = async (item) => {
     if (!item) return;
 
     setSelectedCompany(item);
     const selected = dbList.find(c => c.ref_cust_name === item.value);
-    
+
     if (selected) {
-      const newDbName = selected.name.replace(/^SD_/, ''); 
+      const newDbName = selected.name.replace(/^SD_/, '');
       setDBName(newDbName);
       await AsyncStorage.setItem('dbName', newDbName);
     }
-    
+
     setCompanyError('');
   };
 
@@ -85,65 +87,65 @@ const {completLogout} = useContext(AppContext);
       setCompanyError('Please select your company');
       return false;
     }
-     if (!mobileNumberOrEmpId || mobileNumberOrEmpId.length < 10) {
+    if (!mobileNumberOrEmpId || mobileNumberOrEmpId.length < 10) {
       setErrorMessage("Please enter valid Mobile Number");
       return false;
     }
     return true;
   };
 
-  
 
- const handleSubmit = async () => {
-  if (!validateInput()) return;
 
-  setLoading(true);
-  Keyboard.dismiss(); // Hide keyboard when submitting
+  const handleSubmit = async () => {
+    if (!validateInput()) return;
 
-  try {
-    const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
-    
-    const payload = isMobileNumber 
-      ? { mobile_number: mobileNumberOrEmpId, dbName: dbName }
-      : { emp_id: mobileNumberOrEmpId, dbName: dbName };
+    setLoading(true);
+    Keyboard.dismiss(); // Hide keyboard when submitting
 
-    const response = await forgetCustomerPinView(payload);
-    
-    if (response && response.status === 200) {
-      // Clear userPin from AsyncStorage on success
-      await AsyncStorage.removeItem('userPin');
-      
-      // Set success message and show modal
-      setSuccessMessage(
-        'Your PIN reset request has been submitted successfully. ' +
-        'Please check your registered email & login with new PIN.'
+    try {
+      const isMobileNumber = /^\d{10}$/.test(mobileNumberOrEmpId);
+
+      const payload = isMobileNumber
+        ? { mobile_number: mobileNumberOrEmpId, dbName: dbName }
+        : { emp_id: mobileNumberOrEmpId, dbName: dbName };
+
+      const response = await forgetCustomerPinView(payload);
+
+      if (response && response.status === 200) {
+        // Clear userPin from AsyncStorage on success
+        await AsyncStorage.removeItem('userPin');
+
+        // Set success message and show modal
+        setSuccessMessage(
+          'Your PIN reset request has been submitted successfully. ' +
+          'Please check your registered email & login with new PIN.'
+        );
+        setIsSuccessModalVisible(true);
+
+        setTimeout(() => {
+          //  router.replace({
+          //    pathname: "AuthScreen",
+          //    params: { backTohome: "true" }
+          //  });
+          completLogout();
+        }, 3000);
+
+      } else {
+        throw new Error(response?.data?.message || 'Failed to process your request');
+      }
+    } catch (error) {
+      console.error('Reset PIN error:', error.message);
+      Alert.alert(
+        'Unable to proceed', "Please contact your manager to reset your PIN."
       );
-      setIsSuccessModalVisible(true);
-
-      setTimeout(() => {
-        //  router.replace({
-        //    pathname: "AuthScreen",
-        //    params: { backTohome: "true" }
-        //  });
-        completLogout();
-       }, 3000);
-       
-    } else {
-      throw new Error(response?.data?.message || 'Failed to process your request');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Reset PIN error:', error.message);
-    Alert.alert(
-      'Unable to proceed', "Please contact your manager to reset your PIN."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   return (
-    <SafeAreaContainer edges={["left", "right", "bottom"]}>
+    <SafeAreaContainer edges={["left", "right"]}>
       <Container>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <Header>
@@ -166,7 +168,7 @@ const {completLogout} = useContext(AppContext);
               </TitleContainer>
             </LinearGradient>
           </Header>
-          
+
           <Content>
             <Card>
               {dbList.length > 0 && (
@@ -181,7 +183,7 @@ const {completLogout} = useContext(AppContext);
                   error={companyError}
                 />
               )}
-              
+
               <InputLabel>Enter your Mobile number</InputLabel>
               <InputWrapper>
                 <MaterialIcons name="person" size={20} color="#6c757d" />
@@ -196,7 +198,7 @@ const {completLogout} = useContext(AppContext);
               </InputWrapper>
               {errorMessage ? <ErrorText>{errorMessage}</ErrorText> : null}
 
-              <SubmitButton 
+              <SubmitButton
                 onPress={handleSubmit}
                 disabled={!mobileNumberOrEmpId || !selectedCompany}
               >
@@ -213,24 +215,24 @@ const {completLogout} = useContext(AppContext);
             </Card>
           </Content>
           <View style={styles.securityNote}>
-                          <Ionicons name="shield-checkmark-outline" size={20} color="#FFA726" style={styles.noteIcon} />
-                              <View style={styles.noteContent}>
-                                  <Text style={styles.noteTitle}>Security Notice</Text>
-                                  <Text style={styles.noteText}>
-                                      <Text style={styles.bulletPoint}>• </Text>
-                                      Never share your PIN with anyone
-                                      {'\n'}
-                                      <Text style={styles.bulletPoint}>• </Text>
-                                      Please check your resistered mail-id, login with newly recived mail-id
-                                      (Login with PIN - Logout)
-                                  </Text>
-                              </View>
-                          </View>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#FFA726" style={styles.noteIcon} />
+            <View style={styles.noteContent}>
+              <Text style={styles.noteTitle}>Security Notice</Text>
+              <Text style={styles.noteText}>
+                <Text style={styles.bulletPoint}>• </Text>
+                Never share your PIN with anyone
+                {'\n'}
+                <Text style={styles.bulletPoint}>• </Text>
+                Please check your resistered mail-id, login with newly recived mail-id
+                (Login with PIN - Logout)
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       </Container>
-      
-      <Loader 
-        visible={loading} 
+
+      <Loader
+        visible={loading}
         onTimeout={() => {
           setLoading(false);
           Alert.alert('Timeout', 'Request timed out. Please try again.');
@@ -284,25 +286,25 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#FFA726',
     width: '100%',
-},
-noteIcon: {
+  },
+  noteIcon: {
     marginRight: 12,
     marginTop: 3,
-},
-noteContent: {
+  },
+  noteContent: {
     flex: 1,
-},
-noteTitle: {
+  },
+  noteTitle: {
     fontSize: 15,
     fontWeight: '600',
     color: '#FFA726',
     marginBottom: 6,
-},
-noteText: {
+  },
+  noteText: {
     fontSize: 13,
     color: '#757575',
     lineHeight: 20,
-},
+  },
 });
 
 const SafeAreaContainer = styled(SafeAreaView)`

@@ -86,7 +86,7 @@ const AuthScreen = () => {
         // Clear error messages and reset attempts when user starts typing
         if (hasFailedAttempt || isError.message) {
             setHasFailedAttempt(false);
-            setIsError({visible: false, message:''});
+            setIsError({ visible: false, message: '' });
             setAttemptsRemaining(maxAttempts); // Reset attempts
         }
     };
@@ -99,10 +99,10 @@ const AuthScreen = () => {
         }
 
         // Clear any previous errors
-        setIsError({visible: false, message:''});
+        setIsError({ visible: false, message: '' });
 
         const correctMPIN = await AsyncStorage.getItem('userPin');
-                const finalUsername = await AsyncStorage.getItem('mobileNumber');
+        const finalUsername = await AsyncStorage.getItem('mobileNumber');
         const [token, expirationDateString] = await Promise.all([
             AsyncStorage.getItem('userToken'),
             AsyncStorage.getItem('tokenExpiration')
@@ -135,11 +135,12 @@ const AuthScreen = () => {
     };
 
     const handleBiometricAuthentication = async () => {
-        const finalUsername = await AsyncStorage.getItem('mobileNumber');
-        const userPassword = await AsyncStorage.getItem('userPin');
-        const [token, expirationDateString] = await Promise.all([
+        const [finalUsername, userPassword, token, expirationDateString, storedDbName] = await Promise.all([
+            AsyncStorage.getItem('mobileNumber'),
+            AsyncStorage.getItem('userPin'),
             AsyncStorage.getItem('userToken'),
-            AsyncStorage.getItem('tokenExpiration')
+            AsyncStorage.getItem('tokenExpiration'),
+            AsyncStorage.getItem('dbName'),
         ]);
 
         try {
@@ -155,14 +156,14 @@ const AuthScreen = () => {
 
                     if (now > expirationDate) {
                         // Token expired, perform fresh login which will fetch profile data
-                        await login(finalUsername, userPassword, DbName);
+                        await login(finalUsername, userPassword, storedDbName);
                     } else {
                         // Token still valid, explicitly refresh profile data before navigation
                         await refreshProfileData();
                     }
                 } else {
                     // No token found, perform fresh login
-                    await login(finalUsername, userPassword, DbName);
+                    await login(finalUsername, userPassword, storedDbName);
                 }
             }
         } catch (err) {
@@ -188,9 +189,9 @@ const AuthScreen = () => {
                     {Logos ? (
                         <Image source={Logos} style={styles.logo} />
                     ) : (
-                    <View style={styles.companyPlaceholder}>
-                        <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
-                    </View>
+                        <View style={styles.companyPlaceholder}>
+                            <MaterialIcons name="business" size={scaleWidth(40)} color="#fff" />
+                        </View>
                     )}
                 </View>
                 <Text style={styles.welcomeText}>Welcome to ATOMWALK CRM</Text>
@@ -312,7 +313,7 @@ const AuthScreen = () => {
                                 onPress={() => {
                                     setShowPinInput(false);
                                     setShowFingerprint(false);
-                                    setIsError({visible: false, message: ''});
+                                    setIsError({ visible: false, message: '' });
                                     setHasFailedAttempt(false);
                                     setAttemptsRemaining(maxAttempts);
                                 }}
@@ -358,7 +359,7 @@ const AuthScreen = () => {
                             onPress={() => {
                                 setShowPinInput(false);
                                 setShowFingerprint(false);
-                                setIsError({visible: false, message:''});
+                                setIsError({ visible: false, message: '' });
                                 setHasFailedAttempt(false);
                                 setAttemptsRemaining(maxAttempts);
                             }}

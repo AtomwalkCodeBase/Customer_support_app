@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from "styled-components/native";
 import Constants from "expo-constants";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Colors
 export const colors = {
@@ -34,7 +35,7 @@ export const colors = {
 
 const statusBarHeight = Constants.statusBarHeight;
 
-export const Container = styled.SafeAreaView`
+export const Container = styled(SafeAreaView)`
   background-color: ${colors.primary};
   padding: 20px;
   padding-bottom: 0px;

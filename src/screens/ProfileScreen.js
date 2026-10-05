@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch, Dimensions } from 'react-native';
 import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../Styles/appStyle';
 import { AppContext } from '../../context/AppContext';
@@ -7,11 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRouter } from 'expo-router';
 import { getProfileInfo } from '../services/authServices';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { getCustomerDetailList } from '../services/productServices';
 import Constants from 'expo-constants';
 import HeaderComponent from '../components/HeaderComponent';
 import Loader from '../components/Loader';
 import { TaskContext } from '../../context/TaskContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,8 +21,8 @@ const scaleHeight = (size) => (height / 812) * size;
 
 const ProfileScreen = () => {
   const { profile, logout, fetchCustomerDetails } = useContext(AppContext);
-    const { tickets } = useContext(TaskContext);
-  
+  const { tickets } = useContext(TaskContext);
+
   const [userPin, setUserPin] = useState(null);
   const [profileImg, setProfileImg] = useState({});
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
@@ -120,39 +120,39 @@ const ProfileScreen = () => {
 
   if (error.visible) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
         <Text style={{ color: colors.error, margin: 20 }}>{error.message}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["left", "right"]}>
       {/* <StatusBar barStyle="light-content" backgroundColor={colors.primary} /> */}
       <HeaderComponent
-        headerTitle="Profile" 
-        onBackPress={handleBack} 
-        // onBackPress={() => router.back()} 
+        headerTitle="Profile"
+        onBackPress={handleBack}
+      // onBackPress={() => router.back()} 
       />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileBanner}>
           <View >
             <View style={styles.profileImageContainer}></View>
-              <Image source={{ uri: profile?.image }} style={styles.profileImage} />
+            <Image source={{ uri: profile?.image }} style={styles.profileImage} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 16 }}></View>
+          <Text style={styles.profileName}>
+            {profile?.name}
+          </Text>
+          <View style={styles.badgeContainer}>
+            <View style={styles.badge}>
+              {/* <Text style={styles.badgeText}>Tasks: {totalTask || 0}</Text> */}
+              <Text style={styles.badgeText}>Tickets: {totalTickets || 0}</Text>
             </View>
-            <View style={{ flex: 1, marginLeft: 16 }}></View>
-              <Text style={styles.profileName}>
-                {profile?.name}
-              </Text>
-              <View style={styles.badgeContainer}>
-                <View style={styles.badge}>
-                  {/* <Text style={styles.badgeText}>Tasks: {totalTask || 0}</Text> */}
-                  <Text style={styles.badgeText}>Tickets: {totalTickets || 0}</Text>
-                </View>
-              </View>
-            {/* </View> */}
-            <View style={styles.actionButtonsContainer}>
+          </View>
+          {/* </View> */}
+          <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
               onPress={() => setIsLogoutModalVisible(true)}
               accessibilityLabel="Logout"
@@ -168,8 +168,8 @@ const ProfileScreen = () => {
             >
               <MaterialIcons name="lock" size={24} color={colors.primary} />
             </TouchableOpacity>
-            </View>
           </View>
+        </View>
         {/* </View> */}
 
         {/*  Contact Information */}
@@ -260,7 +260,7 @@ const ProfileScreen = () => {
             {/* Logout */}
             <TouchableOpacity style={styles.optionItem} onPress={() => setIsLogoutModalVisible(true)}>
               <View style={[styles.optionIconContainer, { backgroundColor: colors.errorTransparent }]}>
-               <MaterialCommunityIcons name="exit-run" size={22} color={colors.error} />
+                <MaterialCommunityIcons name="exit-run" size={22} color={colors.error} />
               </View>
               <View style={styles.optionTextContainer}>
                 <Text style={[styles.optionText, { color: colors.error }]}>Logout</Text>
@@ -270,9 +270,9 @@ const ProfileScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-            <View style={styles.fixedFooter}>
-              <Text>Version Code: {appVersion}</Text>
-            </View>
+        <View style={styles.fixedFooter}>
+          <Text>Version Code: {appVersion}</Text>
+        </View>
       </ScrollView>
 
       {/* Logout Confirmation Modal */}
@@ -291,9 +291,8 @@ const ProfileScreen = () => {
       {/* Biometric Confirmation Modal */}
       <ConfirmationModal
         visible={isBiometricModalVisible}
-        message={`Are you sure you want to ${
-          pendingBiometricValue ? 'enable' : 'disable'
-        } biometric authentication?`}
+        message={`Are you sure you want to ${pendingBiometricValue ? 'enable' : 'disable'
+          } biometric authentication?`}
         onConfirm={confirmBiometricToggle}
         onCancel={cancelBiometricToggle}
         confirmText={pendingBiometricValue ? 'Enable' : 'Disable'}
