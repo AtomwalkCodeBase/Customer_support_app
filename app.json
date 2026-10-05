@@ -37,7 +37,16 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera to take photos.",
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "microphonePermission": false
+        }
+      ],
+      "./withOptionalCamera.js"
     ],
     "experiments": {
       "typedRoutes": true
